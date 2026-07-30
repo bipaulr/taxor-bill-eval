@@ -1,0 +1,42 @@
+# Environment
+.env
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Data - keep sample bill images out of repo by default
+data/samples/*.jpg
+data/samples/*.jpeg
+data/samples/*.png
+data/samples/*.heic
+# But keep a placeholder or allowlist if desired
+!data/samples/.gitkeep
+
+# Eval results (auto-generated)
+eval/results/*.csv
+eval/results/*.json
+!eval/results/.gitkeep
+
+# API keys / secrets - NEVER commit these
+*.key
+credentials.json
+token.json

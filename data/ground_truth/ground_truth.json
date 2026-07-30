@@ -1,0 +1,89 @@
+{
+  "_description": "Ground truth data for bill extraction evaluation.",
+  "_match_strategy": {
+    "overall": "Per-field scoring with field-appropriate strategies. No single blended accuracy score.",
+    "vendor_name": {
+      "method": "fuzzy (Jaro-Winkler)",
+      "threshold": 0.85,
+      "rationale": "Handwritten shop names vary in spelling, abbreviation (Provision → Prov.), and inclusion/exclusion of prefixes (Sri, Shri, M/s). Exact match would be too strict for real-world use."
+    },
+    "invoice_number": {
+      "method": "exact, or both null",
+      "rationale": "Invoice numbers are precise identifiers. A wrong number is worse than no number for bookkeeping. No partial credit."
+    },
+    "date": {
+      "method": "exact after normalization to YYYY-MM-DD",
+      "rationale": "Dates must be correct for accounting. Partial credit (e.g. right month, wrong day) is not useful."
+    },
+    "amount": {
+      "method": "exact numeric with ±0.01 tolerance",
+      "rationale": "Total amounts must match for expense reporting. 0.01 tolerance catches floating-point rounding without excusing real errors."
+    },
+    "currency": {
+      "method": "exact (ISO 4217 code)",
+      "rationale": "Binary — either correct or not. For Indian bills, this is almost always INR."
+    },
+    "tax_gst": {
+      "method": "partial credit across sub-fields",
+      "sub_fields": ["gst_number", "gst_amount", "taxable_value"],
+      "rationale": "Tax details have multiple components. Scoring as one binary pass/fail would hide which sub-field fails. Each sub-field scored independently, then averaged."
+    },
+    "illegible_fields": {
+      "method": "not scored (flagged as limitation)",
+      "rationale": "Models can mark fields as illegible. We note this but do not currently score it. A model that admits uncertainty is arguably better than one that hallucinates, but our scoring treats both as incorrect. This is a documented gap."
+    }
+  },
+  "bills": [
+    {
+      "bill_id": "bill_001",
+      "image_file": "bill_001.jpg",
+      "ground_truth": {
+        "vendor_name": "Sri Krishna Provision Store",
+        "invoice_number": null,
+        "date": "2025-03-15",
+        "amount": 456.50,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Handwritten ledger-style bill, no GST registered. Shop name written as 'Sri Krishna Prov. Store'."
+    },
+    {
+      "bill_id": "bill_002",
+      "image_file": "bill_002.jpg",
+      "ground_truth": {
+        "vendor_name": "Anand Medicals",
+        "invoice_number": null,
+        "date": "2025-06-20",
+        "amount": 1280.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Handwritten medical store bill. Amount includes medicine costs, no tax breakdown."
+    },
+    {
+      "bill_id": "bill_003",
+      "image_file": "bill_003.jpg",
+      "ground_truth": {
+        "vendor_name": "Ramesh Hardware & Electricals",
+        "invoice_number": "INV-2025-0891",
+        "date": "2025-04-10",
+        "amount": 2340.75,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": "29ABCDE1234F1Z5",
+          "gst_amount": 210.67,
+          "taxable_value": 2130.08
+        }
+      },
+      "notes": "GST-registered hardware store. Invoice number printed. Handwritten item list."
+    }
+  ]
+}
