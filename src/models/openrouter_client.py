@@ -13,7 +13,7 @@ import base64
 from openai import OpenAI
 
 from src.config import settings
-from src.extractor import BaseExtractor, EXTRACTION_PROMPT, register_extractor
+from src.extractor import BaseExtractor, EXTRACTION_PROMPT, parse_json_response, register_extractor
 
 
 class OpenRouterExtractor(BaseExtractor):
@@ -65,7 +65,12 @@ class OpenRouterExtractor(BaseExtractor):
         self._last_output_tokens = response.usage.completion_tokens if response.usage else 0
 
         import json
-        parsed = json.loads(response.choices[0].message.content)
+        if not response.choices or not response.choices[0] or not response.choices[0].message:
+            raise RuntimeError("Empty response (transient provider flakiness)")
+        content = response.choices[0].message.content
+        if not content:
+            raise RuntimeError("Empty response (transient provider flakiness)")
+        parsed = parse_json_response(content)
         parsed["_model"] = self.model_name
         parsed["_input_tokens"] = self._last_input_tokens
         parsed["_output_tokens"] = self._last_output_tokens

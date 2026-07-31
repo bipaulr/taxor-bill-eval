@@ -118,7 +118,8 @@ class BaseExtractor(ABC):
         return any(
             kw in msg
             for kw in ("429", "resource_exhausted", "rate limit", "rate_limit",
-                       "quota", "too many requests", "429 too_many_requests")
+                       "quota", "too many requests", "429 too_many_requests",
+                       "empty response", "not a json object")
         )
 
     @staticmethod
@@ -135,6 +136,13 @@ class BaseExtractor(ABC):
         # Gemini quota ids look like ".../GenerateRequestsPerDayPerProject...".
         if "perday" in msg or "per_day" in msg or "requests_per_day" in msg:
             return None
+        # OpenRouter :free models hit transient upstream congestion
+        # ("temporarily rate-limited upstream"). Retryable with a short wait.
+        if "temporarily rate-limited" in msg or "rate-limited upstream" in msg:
+            return 15.0
+        # Empty / malformed model output on flaky free endpoints — retryable.
+        if "empty response" in msg or "not a json object" in msg:
+            return 8.0
         # "retry in 23.117s" / "retry in 55.4s"
         m = re.search(r"retry(?:ing)? in ([\d.]+)s", msg)
         if m:
@@ -149,6 +157,43 @@ class BaseExtractor(ABC):
         """Returns a validated BillExtraction Pydantic model."""
         data = self.extract(image_path)
         return BillExtraction(**data)
+
+
+def parse_json_response(text: str | list | None) -> dict[str, Any]:
+    """Parse model output into a dict, tolerating markdown code fences.
+
+    Some providers (Gemini, Gemma via OpenRouter) wrap the JSON in
+    ```json ... ``` fences; some append trailing prose. Some return
+    content as a list of parts. Strip/handle all of these.
+    """
+    import json
+    import re
+
+    if isinstance(text, list):
+        # OpenRouter multimodal responses can be a list of content parts.
+        parts = [p.get("text") if isinstance(p, dict) else str(p) for p in text]
+        text = "\n".join(p for p in parts if p)
+
+    raw = (text or "").strip()
+    fence = re.match(r"^```(?:json)?\s*", raw)
+    if fence:
+        raw = raw[fence.end():]
+    if raw.endswith("```"):
+        raw = raw[:-3].rstrip()
+    if not raw:
+        raise ValueError("Empty model response")
+    try:
+        result = json.loads(raw)
+    except json.JSONDecodeError:
+        # Fall back to the first balanced JSON object in the response.
+        start = raw.find("{")
+        end = raw.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise
+        result = json.loads(raw[start:end + 1])
+    if not isinstance(result, dict):
+        raise ValueError("Model response is not a JSON object")
+    return result
 
 
 # Registry of available extractors

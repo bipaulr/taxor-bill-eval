@@ -329,10 +329,35 @@ def run_evaluation(
 
     cost_df = pd.DataFrame(cost_rows) if cost_rows else pd.DataFrame()
 
-    # Save
-    scores_df.to_csv(os.path.join(output_dir, "per_bill_scores.csv"), index=False)
-    accuracy_df.to_csv(os.path.join(output_dir, "accuracy_summary.csv"), index=False)
-    cost_df.to_csv(os.path.join(output_dir, "cost_summary.csv"), index=False)
+    # Save. Merge with any existing results so multiple partial runs
+    # (different models / days) accumulate into the same summary tables.
+    def _merge_and_save(df: pd.DataFrame, filename: str, keys: list[str]) -> None:
+        path = os.path.join(output_dir, filename)
+        if df.empty:
+            return
+        if os.path.exists(path):
+            old = pd.read_csv(path)
+            combined = pd.concat([old, df], ignore_index=True)
+            if "status" in combined.columns:
+                # Successful extractions must win over transient error rows
+                # recorded in earlier partial runs.
+                combined["_ok"] = combined["status"].astype(str) == "ok"
+                combined = combined.sort_values("_ok", ascending=False)
+                combined = combined.drop(columns="_ok")
+                combined = combined.drop_duplicates(subset=keys, keep="first")
+            else:
+                combined = combined.drop_duplicates(subset=keys, keep="last")
+            combined.to_csv(path, index=False)
+        else:
+            df.to_csv(path, index=False)
+
+    _merge_and_save(
+        scores_df, "per_bill_scores.csv", ["model", "bill_id"]
+    )
+    _merge_and_save(
+        accuracy_df, "accuracy_summary.csv", ["model"]
+    )
+    _merge_and_save(cost_df, "cost_summary.csv", ["model"])
 
     if not accuracy_df.empty:
         print(f"\n{'='*60}")
