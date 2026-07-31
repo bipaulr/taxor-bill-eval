@@ -47,6 +47,7 @@ def cmd_evaluate(args):
         model_names=models,
         output_dir=args.output,
         request_delay=args.delay,
+        dataset=args.dataset,
     )
 
     # Print summary
@@ -115,6 +116,11 @@ def main():
     p_eval.add_argument("--gt", default="data/ground_truth/ground_truth.json")
     p_eval.add_argument("--samples", default="data/samples")
     p_eval.add_argument("--output", default="eval/results")
+    p_eval.add_argument(
+        "--dataset",
+        default="handwritten",
+        help='Dataset label for results (e.g. "handwritten" or "digital")',
+    )
     p_eval.add_argument(
         "--delay",
         type=float,

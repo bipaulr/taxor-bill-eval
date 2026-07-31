@@ -1,0 +1,61 @@
+{
+  "_description": "Ground truth for 3 SYNTHETIC TYPED invoices (machine-generated, perfectly legible). Added to test the 'same model for digital vs handwritten?' question. Note: these are clean, high-contrast renders — real scanned invoices can be noisier (skew, low resolution).",
+  "_source": "Generated synthetically (scripts/digital_bills/*.html) rendered via headless Microsoft Edge. No real PII.",
+  "_match_strategy": "Same per-field strategy as data/ground_truth/ground_truth.json (see that file for full rationale).",
+  "bills": [
+    {
+      "bill_id": "digital_01",
+      "image_file": "digital_01.jpeg",
+      "language": "en",
+      "bill_type": "digital",
+      "ground_truth": {
+        "vendor_name": "Balaji Super Mart",
+        "invoice_number": "INV-2026-0147",
+        "date": "2026-07-18",
+        "amount": 987.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": "29AABCT4781F1Z8",
+          "gst_amount": 47.00,
+          "taxable_value": 940.00
+        }
+      }
+    },
+    {
+      "bill_id": "digital_02",
+      "image_file": "digital_02.jpeg",
+      "language": "en",
+      "bill_type": "digital",
+      "ground_truth": {
+        "vendor_name": "Amrita Medical Store",
+        "invoice_number": "PH/0761",
+        "date": "2026-07-21",
+        "amount": 325.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      }
+    },
+    {
+      "bill_id": "digital_03",
+      "image_file": "digital_03.jpeg",
+      "language": "en",
+      "bill_type": "digital",
+      "ground_truth": {
+        "vendor_name": "Annapoorna Family Restaurant",
+        "invoice_number": "0842",
+        "date": "2026-07-25",
+        "amount": 404.26,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": "29AABCP3456F1Z2",
+          "gst_amount": 19.26,
+          "taxable_value": 385.00
+        }
+      }
+    }
+  ]
+}

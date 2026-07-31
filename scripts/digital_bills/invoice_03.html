@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Courier New', monospace; width: 620px; margin: 0 auto; padding: 24px; color: #111; }
+  .center { text-align: center; }
+  .shop { font-size: 26px; font-weight: bold; }
+  .tag { font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border-bottom: 1px dotted #333; padding: 6px 4px; font-size: 14px; }
+  th { border-bottom: 2px solid #111; text-align: left; }
+  .num { text-align: right; }
+  .totals { margin-left: auto; width: 55%; margin-top: 8px; }
+  .totals td { border: none; padding: 2px 4px; font-size: 14px; }
+  .grand { font-weight: bold; border-top: 2px solid #111 !important; font-size: 16px; }
+  .footer { margin-top: 20px; font-size: 12px; text-align: center; border-top: 1px dashed #999; padding-top: 8px; }
+</style>
+</head>
+<body>
+  <div class="center">
+    <div class="shop">ANNAPOORNA FAMILY RESTAURANT</div>
+    <div class="tag">No. 21, Commercial Street, Bengaluru - 560001</div>
+    <div class="tag">GSTIN: 29AABCP3456F1Z2 | FSSAI: 11521998000987</div>
+    <div style="margin-top:8px; border:2px solid #111; display:inline-block; padding:2px 14px;">BILL</div>
+  </div>
+
+  <table class="meta">
+    <tr><td>Bill No: <b>0842</b></td><td class="num">Date: <b>25/07/2026</b></td></tr>
+    <tr><td>Table: 12</td><td class="num">Time: 8:45 PM</td></tr>
+  </table>
+
+  <table>
+    <tr><th>Item</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+    <tr><td>Masala Dosa</td><td class="num">2</td><td class="num">95.00</td><td class="num">190.00</td></tr>
+    <tr><td>Idli Sambar (2 pcs)</td><td class="num">2</td><td class="num">60.00</td><td class="num">120.00</td></tr>
+    <tr><td>Filter Coffee</td><td class="num">3</td><td class="num">25.00</td><td class="num">75.00</td></tr>
+  </table>
+
+  <table class="totals">
+    <tr><td>Sub Total</td><td class="num">385.00</td></tr>
+    <tr><td>CGST 2.5%</td><td class="num">9.63</td></tr>
+    <tr><td>SGST 2.5%</td><td class="num">9.63</td></tr>
+    <tr class="grand"><td>GRAND TOTAL</td><td class="num">404.26</td></tr>
+  </table>
+
+  <div class="footer">GST charged as per applicable rates | No service charge | Thank you, visit again!</div>
+</body>
+</html>

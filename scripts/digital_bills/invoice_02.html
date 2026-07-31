@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Courier New', monospace; width: 600px; margin: 0 auto; padding: 22px; color: #111; }
+  .center { text-align: center; }
+  .shop { font-size: 24px; font-weight: bold; }
+  .meta { font-size: 13px; }
+  .billno { font-size: 15px; border: 1px dashed #111; display: inline-block; padding: 3px 12px; margin-top: 6px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { text-align: left; border-bottom: 1px solid #111; padding: 5px 4px; font-size: 13px; }
+  td { border-bottom: 1px dotted #999; padding: 5px 4px; font-size: 13px; }
+  .num { text-align: right; }
+  .grand { font-weight: bold; border-top: 2px solid #111 !important; font-size: 15px; }
+  .footer { margin-top: 20px; font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="center">
+    <div class="shop">AMRITA MEDICAL STORE</div>
+    <div class="meta">Shop No. 4, Main Road, Vyttila, Kochi - 682019</div>
+    <div class="meta">Ph: 0484-230 5567</div>
+    <div class="billno">Bill No: <b>PH/0761</b></div>
+  </div>
+
+  <table class="meta">
+    <tr><td>Date: <b>21/07/2026</b></td><td class="num">Salesman: Rakesh</td></tr>
+  </table>
+
+  <table>
+    <tr><th>Medicine</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+    <tr><td>Paracetamol 650mg (10 tabs)</td><td class="num">1</td><td class="num">32.00</td><td class="num">32.00</td></tr>
+    <tr><td>Azithromycin 500mg (5 tabs)</td><td class="num">1</td><td class="num">115.00</td><td class="num">115.00</td></tr>
+    <tr><td>Ambroxol Cough Syrup 100ml</td><td class="num">1</td><td class="num">98.00</td><td class="num">98.00</td></tr>
+    <tr><td>ORS Sachet (5)</td><td class="num">2</td><td class="num">40.00</td><td class="num">80.00</td></tr>
+  </table>
+
+  <table class="totals" style="width:50%; margin-left:auto;">
+    <tr><td>Total Items: 4</td><td class="num">325.00</td></tr>
+  </table>
+
+  <div style="text-align:right; font-size:15px; font-weight:bold; margin-top:6px;">
+    GRAND TOTAL: <span style="font-size:20px;">325.00</span>
+  </div>
+
+  <div class="footer">Prescription medicines sold only against valid prescription | Subject to Kochi jurisdiction</div>
+</body>
+</html>

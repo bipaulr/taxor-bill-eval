@@ -188,7 +188,7 @@ def score_bill(prediction: dict, ground_truth: dict) -> dict[str, float]:
 
 # ---------- Cost tracking ----------
 
-def estimate_cost(extractor, predictions: list[dict]) -> dict:
+def estimate_cost(extractor, predictions: list[dict], dataset: str = "handwritten") -> dict:
     """Aggregate cost info from predictions."""
     total_input_tokens = sum(p.get("_input_tokens", 0) for p in predictions)
     total_output_tokens = sum(p.get("_output_tokens", 0) for p in predictions)
@@ -200,6 +200,7 @@ def estimate_cost(extractor, predictions: list[dict]) -> dict:
 
     return {
         "model": extractor.model_name,
+        "dataset": dataset,
         "num_bills": n,
         "total_input_tokens": total_input_tokens,
         "total_output_tokens": total_output_tokens,
@@ -217,6 +218,7 @@ def run_evaluation(
     model_names: list[str] | None = None,
     output_dir: str = "eval/results",
     request_delay: float = 13.0,
+    dataset: str = "handwritten",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Run full evaluation:
@@ -230,6 +232,10 @@ def run_evaluation(
     request_delay: seconds to sleep between API calls. The Gemini free tier
     allows ~5 requests/minute (RPM), so a delay of ~13s keeps us under that.
     Defaults to 13.0s; set 0 to disable.
+
+    dataset: label attached to every result row (e.g. "handwritten" or
+    "digital") so summaries for different datasets stay separate in the
+    merged CSVs.
     """
     if model_names is None:
         model_names = ["gemini-3.1-flash-lite", "gpt-4o", "claude-sonnet-4-6"]
@@ -276,6 +282,7 @@ def run_evaluation(
                     "model": model_name,
                     "bill_id": bill_id,
                     "status": "error",
+                    "dataset": dataset,
                     "error": str(e),
                 }
                 all_scores.append(row)
@@ -292,6 +299,7 @@ def run_evaluation(
                 "model": model_name,
                 "bill_id": bill_id,
                 "status": "ok",
+                "dataset": dataset,
                 **scores,
             }
             all_scores.append(row)
@@ -299,7 +307,7 @@ def run_evaluation(
 
         # Cost
         if predictions:
-            cost_info = estimate_cost(extractor, predictions)
+            cost_info = estimate_cost(extractor, predictions, dataset=dataset)
             cost_rows.append(cost_info)
             print(f"  Cost: ${cost_info['cost_per_bill']:.6f}/bill")
             print(f"        ${cost_info['cost_per_100_bills']:.4f}/100 bills")
@@ -314,16 +322,21 @@ def run_evaluation(
         else:
             acc_cols = [
                 c for c in ok_df.columns
-                if c not in ("model", "bill_id", "status", "error")
+                if c not in ("model", "bill_id", "status", "error", "dataset")
             ]
-            accuracy_df = ok_df.groupby("model")[acc_cols].mean().reset_index()
+            accuracy_df = ok_df.groupby(["model", "dataset"])[acc_cols].mean().reset_index()
             accuracy_df = accuracy_df.round(4)
             # Convert to percentages
             for col in acc_cols:
                 accuracy_df[col] = (accuracy_df[col] * 100).round(1)
             # Note how many bills each model successfully processed
-            counts = ok_df.groupby("model").size().rename("bills_scored")
-            accuracy_df = accuracy_df.merge(counts, left_on="model", right_index=True, how="left")
+            counts = ok_df.groupby(["model", "dataset"]).size().rename("bills_scored")
+            accuracy_df = accuracy_df.merge(
+                counts,
+                left_on=["model", "dataset"],
+                right_index=True,
+                how="left",
+            )
     else:
         accuracy_df = pd.DataFrame()
 
@@ -337,6 +350,9 @@ def run_evaluation(
             return
         if os.path.exists(path):
             old = pd.read_csv(path)
+            # Existing rows predating the dataset tag are all handwritten.
+            if "dataset" in df.columns and "dataset" not in old.columns:
+                old["dataset"] = "handwritten"
             combined = pd.concat([old, df], ignore_index=True)
             if "status" in combined.columns:
                 # Successful extractions must win over transient error rows
@@ -355,9 +371,9 @@ def run_evaluation(
         scores_df, "per_bill_scores.csv", ["model", "bill_id"]
     )
     _merge_and_save(
-        accuracy_df, "accuracy_summary.csv", ["model"]
+        accuracy_df, "accuracy_summary.csv", ["model", "dataset"]
     )
-    _merge_and_save(cost_df, "cost_summary.csv", ["model"])
+    _merge_and_save(cost_df, "cost_summary.csv", ["model", "dataset"])
 
     if not accuracy_df.empty:
         print(f"\n{'='*60}")
