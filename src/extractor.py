@@ -73,11 +73,77 @@ class BaseExtractor(ABC):
     """Every model client inherits from this."""
 
     model_name: str
+    # Rate-limit handling: how many times to retry a request that hits a
+    # 429 (quota/rate-limit) error, and the base seconds between retries.
+    max_retries: int = 3
+    retry_base_delay: float = 20.0
 
     @abstractmethod
-    def extract(self, image_path: str) -> dict[str, Any]:
-        """Send image to model, return parsed BillExtraction as dict."""
+    def _extract_impl(self, image_path: str) -> dict[str, Any]:
+        """Provider-specific extraction logic. Subclasses implement this."""
         ...
+
+    def extract(self, image_path: str) -> dict[str, Any]:
+        """Send image to model, return parsed BillExtraction as dict.
+
+        Wraps _extract_impl with retry-on-rate-limit logic. The free tiers
+        of Gemini/OpenAI/Anthropic all enforce per-minute AND per-day request
+        limits. We retry transient (per-minute) limits with a short backoff,
+        but bail out fast on per-day quota exhaustion (retrying is useless
+        until the quota resets).
+        """
+        last_error: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                return self._extract_impl(image_path)
+            except Exception as e:  # noqa: BLE001 - retry all provider errors
+                last_error = e
+                if not self._is_rate_limit(e) or attempt >= self.max_retries:
+                    break
+                retry_after = self._retry_after_seconds(e)
+                if retry_after is None:
+                    # Ambiguous — treat as daily quota exhaustion, bail.
+                    break
+                delay = min(retry_after, self.retry_base_delay * (2**attempt))
+                print(f"    Rate limited, retrying in {delay:.0f}s "
+                      f"(attempt {attempt + 1}/{self.max_retries})...")
+                import time
+                time.sleep(delay)
+        raise last_error  # type: ignore[misc]
+
+    @staticmethod
+    def _is_rate_limit(e: Exception) -> bool:
+        """Heuristic: 429 / RESOURCE_EXHAUSTED / rate_limit means rate-limited."""
+        msg = str(e).lower()
+        return any(
+            kw in msg
+            for kw in ("429", "resource_exhausted", "rate limit", "rate_limit",
+                       "quota", "too many requests", "429 too_many_requests")
+        )
+
+    @staticmethod
+    def _retry_after_seconds(e: Exception) -> float | None:
+        """
+        Parse the retry delay from a rate-limit error, if the provider
+        suggests one. Return None if the limit appears to be a per-day
+        (non-recoverable-in-seconds) quota.
+        """
+        msg = str(e).lower()
+        import re
+        # Daily-quota exhaustion is NOT recoverable with a short retry —
+        # return None so the caller bails out immediately.
+        # Gemini quota ids look like ".../GenerateRequestsPerDayPerProject...".
+        if "perday" in msg or "per_day" in msg or "requests_per_day" in msg:
+            return None
+        # "retry in 23.117s" / "retry in 55.4s"
+        m = re.search(r"retry(?:ing)? in ([\d.]+)s", msg)
+        if m:
+            return float(m.group(1))
+        # Gemini per-minute 429 errors embed a RetryInfo.retryDelay.
+        m = re.search(r"retrydelay': '([\d.]+)s'", msg)
+        if m:
+            return float(m.group(1))
+        return None
 
     def extract_structured(self, image_path: str) -> BillExtraction:
         """Returns a validated BillExtraction Pydantic model."""
@@ -101,9 +167,12 @@ def register_extractor(name: str):
 
 # Model name to module path mapping (for lazy loading)
 _MODEL_MODULES = {
-    "gemini-2.5-flash": "src.models.gemini_client",
+    "gemini-3.1-flash-lite": "src.models.gemini_client",
     "gpt-4o": "src.models.openai_client",
     "claude-sonnet-4-6": "src.models.anthropic_client",
+    "llama-4-scout": "src.models.groq_client",
+    "gemma-4-31b": "src.models.openrouter_client",
+    "nemotron-nano-12b-vl": "src.models.openrouter_client",
 }
 
 
@@ -125,3 +194,4 @@ def get_extractor(name: str) -> BaseExtractor:
     """Get an extractor instance by model name."""
     _ensure_model_loaded(name)
     return _registry[name]()
+

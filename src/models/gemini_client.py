@@ -1,5 +1,8 @@
 """
-Gemini 2.5 Flash extractor via Google AI Studio / Gemini API.
+Gemini 3.1 Flash Lite extractor via Google AI Studio / Gemini API.
+
+NOTE: Gemini free tier enforces a daily quota of ~20 requests PER MODEL.
+Switch model names to get a fresh daily pool.
 """
 
 import base64
@@ -12,21 +15,22 @@ from src.config import settings
 from src.extractor import BaseExtractor, EXTRACTION_PROMPT, register_extractor
 
 
-@register_extractor("gemini-2.5-flash")
+@register_extractor("gemini-3.1-flash-lite")
 class GeminiExtractor(BaseExtractor):
-    """Extract bill data using Gemini 2.5 Flash (vision-capable)."""
+    """Extract bill data using Gemini 3.1 Flash Lite (vision-capable)."""
 
-    model_name = "gemini-2.5-flash"
+    model_name = "gemini-3.1-flash-lite"
 
-    # Pricing as of July 2026 (USD per 1M tokens)
-    # Free tier available; paid tier: $0.30 input / $2.50 output per 1M tokens
-    input_price_per_1m = 0.30
-    output_price_per_1m = 2.50
+    # Pricing as of July 2026 (USD per 1M tokens), verified 2026-07-31
+    # from https://ai.google.dev/gemini-api/docs/pricing
+    # Free tier available; paid tier: $0.25 input / $1.50 output per 1M tokens
+    input_price_per_1m = 0.25
+    output_price_per_1m = 1.50
 
     def __init__(self):
         self.client = genai.Client(api_key=settings.gemini_api_key)
 
-    def extract(self, image_path: str) -> dict[str, Any]:
+    def _extract_impl(self, image_path: str) -> dict[str, Any]:
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
@@ -81,3 +85,4 @@ class GeminiExtractor(BaseExtractor):
         input_cost = (self._last_input_tokens / 1_000_000) * self.input_price_per_1m
         output_cost = (self._last_output_tokens / 1_000_000) * self.output_price_per_1m
         return round(input_cost + output_cost, 8)
+

@@ -26,7 +26,7 @@ class AnthropicExtractor(BaseExtractor):
     def __init__(self):
         self.client = Anthropic(api_key=settings.anthropic_api_key)
 
-    def extract(self, image_path: str) -> dict[str, Any]:
+    def _extract_impl(self, image_path: str) -> dict[str, Any]:
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
@@ -89,3 +89,4 @@ class AnthropicExtractor(BaseExtractor):
         input_cost = (self._last_input_tokens / 1_000_000) * self.input_price_per_1m
         output_cost = (self._last_output_tokens / 1_000_000) * self.output_price_per_1m
         return round(input_cost + output_cost, 8)
+

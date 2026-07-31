@@ -20,7 +20,7 @@ def cmd_extract(args):
     """Run extraction on all bills (without evaluation)."""
     from src.evaluator import run_evaluation
     # Run extraction-only by passing a subset of models
-    models = args.models.split(",") if args.models else ["gemini-2.5-flash"]
+    models = args.models.split(",") if args.models else ["gemini-3.1-flash-lite"]
     
     # We use run_evaluation but only care about the predictions
     # A more targeted approach would separate extraction from evaluation
@@ -38,7 +38,7 @@ def cmd_evaluate(args):
     from src.evaluator import run_evaluation
 
     models = args.models.split(",") if args.models else [
-        "gemini-2.5-flash", "gpt-4o", "claude-sonnet-4-6"
+        "gemini-3.1-flash-lite", "gemma-4-31b", "nemotron-nano-12b-vl"
     ]
 
     accuracy_df, cost_df = run_evaluation(
@@ -46,6 +46,7 @@ def cmd_evaluate(args):
         samples_dir=args.samples,
         model_names=models,
         output_dir=args.output,
+        request_delay=args.delay,
     )
 
     # Print summary
@@ -98,7 +99,7 @@ def main():
 
     # extract
     p_extract = subparsers.add_parser("extract", help="Run extraction only")
-    p_extract.add_argument("--models", default="gemini-2.5-flash")
+    p_extract.add_argument("--models", default="gemini-3.1-flash-lite")
     p_extract.add_argument("--gt", default="data/ground_truth/ground_truth.json")
     p_extract.add_argument("--samples", default="data/samples")
     p_extract.add_argument("--output", default="eval/results")
@@ -108,12 +109,18 @@ def main():
     p_eval = subparsers.add_parser("evaluate", help="Run full evaluation")
     p_eval.add_argument(
         "--models",
-        default="gemini-2.5-flash,gpt-4o,claude-sonnet-4-6",
+        default="gemini-3.1-flash-lite,gemma-4-31b,nemotron-nano-12b-vl",
         help="Comma-separated model names",
     )
     p_eval.add_argument("--gt", default="data/ground_truth/ground_truth.json")
     p_eval.add_argument("--samples", default="data/samples")
     p_eval.add_argument("--output", default="eval/results")
+    p_eval.add_argument(
+        "--delay",
+        type=float,
+        default=13.0,
+        help="Seconds to sleep between API calls (free-tier rate limit)",
+    )
     p_eval.set_defaults(func=cmd_evaluate)
 
     # zoho-push
@@ -139,3 +146,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

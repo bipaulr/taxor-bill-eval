@@ -25,7 +25,7 @@ def main():
     )
     parser.add_argument(
         "--models",
-        default="gemini-2.5-flash,gpt-4o,claude-sonnet-4-6",
+        default="gemini-3.1-flash-lite,gpt-4o,claude-sonnet-4-6",
         help="Comma-separated list of model names to evaluate",
     )
     parser.add_argument(
@@ -43,6 +43,12 @@ def main():
         default="eval/results",
         help="Directory to write result CSVs",
     )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=13.0,
+        help="Seconds to sleep between API calls (free-tier rate limit). Set 0 to disable.",
+    )
     args = parser.parse_args()
 
     model_names = [m.strip() for m in args.models.split(",")]
@@ -54,6 +60,7 @@ def main():
     print(f"Ground truth:    {args.gt}")
     print(f"Samples dir:     {args.samples}")
     print(f"Output dir:      {args.output}")
+    print(f"Request delay:   {args.delay}s")
     print("=" * 60)
 
     accuracy_df, cost_df = run_evaluation(
@@ -61,6 +68,7 @@ def main():
         samples_dir=args.samples,
         model_names=model_names,
         output_dir=args.output,
+        request_delay=args.delay,
     )
 
     print(f"\nResults saved to {args.output}/")
@@ -71,3 +79,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

@@ -1,5 +1,10 @@
 """
-GPT-4o extractor via OpenAI API.
+OpenRouter free-tier extractors (OpenAI-compatible gateway).
+
+Free vision models available July 2026 (subject to rotation):
+  - google/gemma-4-31b-it:free      Gemma 4 31B, multilingual (140+ langs)
+  - nvidia/nemotron-nano-12b-v2-vl:free  NVidia 12B vision-language
+Rate limits on :free models: ~20 req/min, ~200 req/day (per model).
 """
 
 from typing import Any
@@ -11,19 +16,27 @@ from src.config import settings
 from src.extractor import BaseExtractor, EXTRACTION_PROMPT, register_extractor
 
 
-@register_extractor("gpt-4o")
-class OpenAIExtractor(BaseExtractor):
-    """Extract bill data using GPT-4o (vision-capable)."""
+class OpenRouterExtractor(BaseExtractor):
+    """Generic extractor talking to OpenRouter's OpenAI-compatible API."""
 
-    model_name = "gpt-4o"
-
-    # Pricing as of July 2026 (USD per 1M tokens)
-    # $2.50 input / $10.00 output per 1M tokens
-    input_price_per_1m = 2.50
-    output_price_per_1m = 10.00
+    # OpenRouter reports $0 pricing for :free models; token cost is 0.
+    input_price_per_1m = 0.0
+    output_price_per_1m = 0.0
 
     def __init__(self):
-        self.client = OpenAI(api_key=settings.openai_api_key)
+        if not settings.openrouter_api_key:
+            raise ValueError(
+                "OPENROUTER_API_KEY not set. Get a free key at "
+                "https://openrouter.ai/settings/keys and add it to .env"
+            )
+        self.client = OpenAI(
+            api_key=settings.openrouter_api_key,
+            base_url="https://openrouter.ai/api/v1",
+            default_headers={
+                "HTTP-Referer": "https://github.com/bipaulr/taxor",
+                "X-Title": "BillEval",
+            },
+        )
 
     def _extract_impl(self, image_path: str) -> dict[str, Any]:
         with open(image_path, "rb") as f:
@@ -39,13 +52,7 @@ class OpenAIExtractor(BaseExtractor):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": EXTRACTION_PROMPT},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": data_url,
-                                "detail": "high",
-                            },
-                        },
+                        {"type": "image_url", "image_url": {"url": data_url}},
                     ],
                 }
             ],
@@ -69,3 +76,16 @@ class OpenAIExtractor(BaseExtractor):
         output_cost = (self._last_output_tokens / 1_000_000) * self.output_price_per_1m
         return round(input_cost + output_cost, 8)
 
+
+@register_extractor("gemma-4-31b")
+class Gemma31BExtractor(OpenRouterExtractor):
+    """Gemma 4 31B (Google, open weights) via OpenRouter free tier."""
+
+    model_name = "google/gemma-4-31b-it:free"
+
+
+@register_extractor("nemotron-nano-12b-vl")
+class NemotronVL12BExtractor(OpenRouterExtractor):
+    """NVidia Nemotron Nano 12B V2 VL via OpenRouter free tier."""
+
+    model_name = "nvidia/nemotron-nano-12b-v2-vl:free"

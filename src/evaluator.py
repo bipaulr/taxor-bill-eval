@@ -216,6 +216,7 @@ def run_evaluation(
     samples_dir: str,
     model_names: list[str] | None = None,
     output_dir: str = "eval/results",
+    request_delay: float = 13.0,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Run full evaluation:
@@ -226,10 +227,12 @@ def run_evaluation(
     5. Track cost
     6. Save CSV results
 
-    Returns (accuracy_df, cost_df).
+    request_delay: seconds to sleep between API calls. The Gemini free tier
+    allows ~5 requests/minute (RPM), so a delay of ~13s keeps us under that.
+    Defaults to 13.0s; set 0 to disable.
     """
     if model_names is None:
-        model_names = ["gemini-2.5-flash", "gpt-4o", "claude-sonnet-4-6"]
+        model_names = ["gemini-3.1-flash-lite", "gpt-4o", "claude-sonnet-4-6"]
 
     with open(ground_truth_path) as f:
         gt_data = json.load(f)
@@ -264,15 +267,31 @@ def run_evaluation(
                 pred = extractor.extract(image_path)
                 predictions.append(pred)
             except Exception as e:
+                # On hard failure, record the error but DO NOT score the bill —
+                # scoring an empty dict would count as 0 for every field and
+                # pollute the per-field accuracy numbers.
                 print(f"    ERROR: {e}")
-                pred = {"_error": str(e)}
-                predictions.append(pred)
+                predictions.append({"_error": str(e)})
+                row = {
+                    "model": model_name,
+                    "bill_id": bill_id,
+                    "status": "error",
+                    "error": str(e),
+                }
+                all_scores.append(row)
+                continue
+
+            # Respect free-tier rate limits between requests
+            import time
+            if request_delay > 0:
+                time.sleep(request_delay)
 
             # Score
             scores = score_bill(pred, truth)
             row = {
                 "model": model_name,
                 "bill_id": bill_id,
+                "status": "ok",
                 **scores,
             }
             all_scores.append(row)
@@ -288,12 +307,23 @@ def run_evaluation(
     # Build accuracy table (per model, per field — average across bills)
     scores_df = pd.DataFrame(all_scores)
     if not scores_df.empty:
-        acc_cols = [c for c in scores_df.columns if c not in ("model", "bill_id")]
-        accuracy_df = scores_df.groupby("model")[acc_cols].mean().reset_index()
-        accuracy_df = accuracy_df.round(4)
-        # Convert to percentages
-        for col in acc_cols:
-            accuracy_df[col] = (accuracy_df[col] * 100).round(1)
+        ok_df = scores_df[scores_df.get("status", "ok") == "ok"].copy()
+        if ok_df.empty:
+            # Every bill errored (e.g. quota exhausted) — nothing to aggregate.
+            accuracy_df = pd.DataFrame(columns=["model", "bills_scored"])
+        else:
+            acc_cols = [
+                c for c in ok_df.columns
+                if c not in ("model", "bill_id", "status", "error")
+            ]
+            accuracy_df = ok_df.groupby("model")[acc_cols].mean().reset_index()
+            accuracy_df = accuracy_df.round(4)
+            # Convert to percentages
+            for col in acc_cols:
+                accuracy_df[col] = (accuracy_df[col] * 100).round(1)
+            # Note how many bills each model successfully processed
+            counts = ok_df.groupby("model").size().rename("bills_scored")
+            accuracy_df = accuracy_df.merge(counts, left_on="model", right_index=True, how="left")
     else:
         accuracy_df = pd.DataFrame()
 
@@ -325,3 +355,4 @@ if __name__ == "__main__":
     gt_path = sys.argv[1] if len(sys.argv) > 1 else "data/ground_truth/ground_truth.json"
     samples = sys.argv[2] if len(sys.argv) > 2 else "data/samples"
     run_evaluation(gt_path, samples)
+
