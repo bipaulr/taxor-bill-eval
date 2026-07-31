@@ -134,7 +134,9 @@ class BaseExtractor(ABC):
         # Daily-quota exhaustion is NOT recoverable with a short retry —
         # return None so the caller bails out immediately.
         # Gemini quota ids look like ".../GenerateRequestsPerDayPerProject...".
-        if "perday" in msg or "per_day" in msg or "requests_per_day" in msg:
+        # OpenRouter shared free budget: "...free-models-per-day...".
+        if ("perday" in msg or "per_day" in msg or "requests_per_day" in msg
+                or "per-day" in msg or "per day" in msg):
             return None
         # OpenRouter :free models hit transient upstream congestion
         # ("temporarily rate-limited upstream"). Retryable with a short wait.
