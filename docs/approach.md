@@ -1,73 +1,126 @@
 # Approach & Methodology
 
+## Objective
+
+Taxor needs handwritten Indian bills converted into structured expense entries
+(vendor, invoice number, date, amount, currency, tax/GST). This project answers
+two questions with data:
+
+1. Which vision LLM actually reads handwritten bills best?
+2. Does the accuracy gain justify the cost?
+
 ## Model Selection
 
-Three vision-capable LLMs were selected based on availability via free/trial tiers and documented vision capabilities:
+Four vision-capable models were selected based on what was *actually usable* via
+free/trial tiers on the evaluation day. OpenAI (GPT-4o) and Anthropic (Claude)
+were originally planned but their trial credits were exhausted before any runs
+completed, so they were dropped and replaced with free open-weight alternatives.
 
-| Model | Provider | API Pricing (Input/Output per 1M tokens) | Trial Access |
-|-------|----------|------------------------------------------|--------------|
-| Gemini 2.5 Flash | Google AI Studio | $0.30 / $2.50 | Free tier (rate-limited) |
-| GPT-4o | OpenAI | $2.50 / $10.00 | $5–18 trial credits |
-| Claude Sonnet 4.6 | Anthropic | $3.00 / $15.00 | $5 trial credits |
+| Model | Provider | List price (in/out per 1M tok) | Access used | Status |
+|-------|----------|-------------------------------|-------------|--------|
+| Gemini 3.1 Flash Lite | Google AI Studio | $0.25 / $1.50 | Free tier (20 req/day) | ✅ full run |
+| Gemini 3 Flash Preview | Google AI Studio | $0.25 / $1.50 | Free tier | 🔄 partial |
+| Nemotron Nano 12B VL | NVIDIA (via OpenRouter `:free`) | $0.11 / $0.34 (paid endpoint) | OpenRouter free (50 req/day, shared) | ✅ full run |
+| Gemma 4 31B | Google (via OpenRouter `:free`) | $0.25 / $0.80 (paid endpoint) | OpenRouter free | 🔄 1/13 so far |
 
-**Why these three?** They span the price spectrum: Gemini 2.5 Flash is the budget champion, GPT-4o is the mid-range standard, and Claude Sonnet 4.6 is the premium option. Comparing across price points makes the cost/accuracy trade-off analysis meaningful.
+> **Honest note on pricing:** the models marked "free tier" cost **$0 actual
+> spend** in this project. The *list prices* are what a production deployment
+> would pay once free quotas (rate limits) stop being sufficient — we report
+> both so the cost argument is grounded, not vibes.
 
-**Pricing data source:** Verified against official provider pages on 2026-07-28.
+**Free-tier realities discovered (documented so nobody repeats our surprise):**
+- Gemini free tier: ~20 requests/day shared across ALL model names on the account.
+- OpenRouter free tier: **50 requests/day shared across all `:free` models per
+  account** (the docs often quote "200/model" — our account was capped at 50 total).
+- Groq free tier: no vision models exposed on a new free account (text/whisper only).
 
 ## Dataset
 
-**10–15 handwritten Indian bills/receipts** photographed by the author (personal/family bills from local shops). See `data/samples/` and `data/ground_truth/ground_truth.json`.
+### Handwritten (the core set) — 13 bills
+Photographed real bills from local shops (personal/family expenses). See
+`data/samples/` and `data/ground_truth/ground_truth.json`.
+
+- 11 English, 2 Malayalam (bills 09, 13). Bill 09 is mixed: items in Malayalam,
+  vendor name printed in English ("M.S Fruits & Vegetables").
+- No bill has GST or a reliable invoice number — which makes the
+  `invoice_number` / `tax_gst` scores a measure of **model honesty** (see scoring).
+- Deliberate variety: different handwriting styles, paper quality, lighting.
+
+### Digital (supporting set) — 3 synthetic typed invoices
+Added to answer the task's "same model for digital AND handwritten?" question.
+These are machine-generated typed invoices (`scripts/digital_bills/*.html`
+rendered via headless Edge) in three distinct formats:
+grocery GST invoice, pharmacy bill (no GST), restaurant bill.
+See `data/samples_digital/` and `data/ground_truth/ground_truth_digital.json`.
+
+> Limitation: synthetic = clean, high-contrast, perfectly legible. Real scanned
+> invoices can be skewed, low-res, or cluttered. Our digital numbers are thus an
+> **upper bound** on typed-document performance.
 
 ### Redaction
-Before sending any image to an external API, sensitive Personally Identifiable Information (PII) is redacted:
-- Phone numbers
-- Full names of individuals (shop names are kept, as they're business-relevant)
-- Bank account numbers / UPI IDs
-- GST registration numbers (if they belong to an identifiable individual rather than a business)
-
-Redaction was done manually using image editing software (Gaussian blur). The `scripts/redact_images.py` utility is provided for batch processing with pixel-region specification.
+All images are redacted before any API call: phone numbers, individual names,
+bank/UPI details blurred (Gaussian). Shop names kept (business-relevant).
+The `scripts/redact_images.py` utility is provided; the original unredacted
+photos are git-ignored and never committed.
 
 ## Ground Truth & Scoring
 
-### Definition of "Correct"
+### Definition of "correct"
 
-Each field uses a different match strategy, chosen to reflect the real-world cost of error:
-
-| Field | Match Strategy | Rationale |
+| Field | Match strategy | Rationale |
 |-------|---------------|-----------|
-| **vendor_name** | Fuzzy (Jaro-Winkler ≥ 0.85) | Handwritten names vary in spelling, abbreviation, and spacing. Exact match would penalize trivial differences like "Krishna Prov. Store" vs "Sri Krishna Provision Store". The 0.85 threshold means 85% character similarity — loosely tolerant. |
-| **invoice_number** | Exact, or both null | Invoice numbers are precise identifiers. A wrong number is worse than no number. Partial credit is misleading here. |
-| **date** | Exact (normalized to YYYY-MM-DD) | Dates are unambiguous when parsed. Partial credit (e.g. correct month but wrong day) is not useful for bookkeeping. |
-| **amount** | Exact numeric (±0.01 tolerance) | Amounts must be precise for accounting. The 0.01 tolerance catches floating-point rounding without excusing real errors. |
-| **currency** | Exact (ISO 4217) | Usually always INR for this dataset. Either correct or not. |
-| **tax_gst** | Partial credit across sub-fields | Tax details have multiple parts (GST number, GST amount, taxable value). Scoring them as a single binary pass/fail would hide which sub-field the model struggles with. Each sub-field is scored independently, then averaged. |
+| vendor_name | Fuzzy (Jaro-Winkler ≥ 0.85) | Handwritten names vary in spelling/abbreviation; exact match would over-penalise |
+| invoice_number | Exact, or both null | Precise identifiers; a wrong number is worse than none |
+| date | Exact (normalized YYYY-MM-DD) | Must be right for accounting |
+| amount | Exact numeric (±0.01) | Expense reporting needs exact totals |
+| currency | Exact (ISO 4217) | Binary |
+| tax_gst | Partial credit across 3 sub-fields | GST number / amount / taxable value scored separately, then averaged |
 
-### Important caveats
+### The hallucination penalty (key design choice)
 
-- **Null handling:** If a field is absent from the ground truth (e.g. no invoice number on a shop receipt), it's **not skipped** — the model must also return null. Returning a made-up value is penalized as a **hallucination** (score 0). This makes `invoice_number` and `tax_gst` accuracy metrics of model *honesty*, not just reading skill. Most bills in this dataset have no invoice number, so this penalization matters a lot.
-- **Illegibility flagging:** Models can mark fields as `illegible` in the output. This is noted but not currently scored as a separate metric — a model that says "I can't read this" is arguably better than one that hallucinates. This is a known gap (see Limitations).
+**Null in ground truth ⇒ the model must return null.** Most bills have no
+invoice number and no GST; a model that *invents* one scores 0. This means
+`invoice_number` and `tax_gst` accuracy is a measure of **honesty**, not just
+reading skill — and it directly penalizes the failure mode that would pollute a
+real accounting system (booking a fake invoice number / GST amount).
 
-## Cost Tracking
-
-Cost is calculated per bill based on actual token usage from API responses:
+### Cost tracking
 
 ```
-cost = (input_tokens / 1_000_000) × input_price_per_1m
-     + (output_tokens / 1_000_000) × output_price_per_1m
+cost = (input_tokens/1e6) × input_price_per_1m + (output_tokens/1e6) × output_price_per_1m
 ```
 
-- Input tokens include the image tokens + text prompt tokens
-- Output tokens are the model's response (JSON)
-- Prices are per the official rate cards (July 2026)
+Reported as **cost/bill** and **cost/100 bills** (extrapolated). We also show a
+"paid-tier" extrapolation for the open models so a decision isn't made on the
+free-tier honeymoon alone.
 
-Cost is reported as:
-- **Cost per bill** — the average across all bills
-- **Cost per 100 bills** — extrapolated (average × 100)
+## Results (as of 31 Jul, pending final runs)
 
-Note: Actual billed amounts may differ slightly due to:
-- Free tier usage (Gemini is free via AI Studio, but we compute cost at paid rate for fair comparison)
-- Prompt caching discounts (not applied here)
-- Batch API discounts (not applied here)
+### Handwritten — accuracy % per field
+
+| Model | vendor | invoice# | date | amount | currency | tax/GST | bills |
+|-------|--------|----------|------|--------|----------|---------|-------|
+| Gemini 3.1 Flash Lite | 100.0 | 53.8 | 38.5 | 92.3 | 100.0 | 92.3 | 13 |
+| Nemotron Nano 12B VL | 92.3 | 46.2 | 38.5 | 84.6 | 100.0 | 92.3 | 13 |
+| Gemma 4 31B | 100.0* | 100.0* | 100.0* | 100.0* | 100.0* | 100.0* | 1* |
+| Gemini 3 Flash Preview | 100.0* | 66.7* | 50.0* | 100.0* | 100.0* | 100.0* | 6* |
+
+\* pending full run (free-tier daily quotas exhausted mid-run).
+
+### Digital (3 synthetic) — accuracy % per field
+
+| Model | vendor | invoice# | date | amount | currency | tax/GST | bills |
+|-------|--------|----------|------|--------|----------|---------|-------|
+| Nemotron Nano 12B VL | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 3 |
+| *(Gemini / Gemma pending)* | — | — | — | — | — | — | — |
+
+### Cost
+
+| Model | actual spend | cost/bill (paid tier) | cost/100 bills |
+|-------|--------------|------------------------|----------------|
+| Gemini 3.1 Flash Lite | $0 (free quota) | $0.00066 | $0.0656 |
+| Nemotron Nano 12B VL | $0 (free) | ~$0.00011 | ~$0.011 |
+| Gemma 4 31B | $0 (free) | ~$0.00015 | ~$0.015 |
 
 ## Pipeline Architecture
 
@@ -75,57 +128,62 @@ Note: Actual billed amounts may differ slightly due to:
 bill_image.jpg
     │
     ▼
-┌─────────────────────────────┐
-│  BaseExtractor (interface)  │  ← src/extractor.py
-│  - extract(image_path)      │
-│  - returns BillExtraction   │
-└──────────┬──────────────────┘
-           │
-     ┌─────┼─────┐
-     ▼     ▼     ▼
-  Gemini  GPT-4o Claude
-   2.5          Sonnet
-   Flash        4.6
-     │     │     │
-     └─────┼─────┘
-           ▼
-┌─────────────────────────────┐
-│      Evaluator              │  ← src/evaluator.py
-│  - per-field scoring        │
-│  - cost tracking            │
-│  - accuracy/cost tables     │
-└──────────┬──────────────────┘
-           ▼
-┌─────────────────────────────┐
-│   Zoho Books Integration    │  ← src/zoho_integration.py
-│   - OAuth2 + token refresh  │
-│   - create_expense()        │
-└─────────────────────────────┘
+┌───────────────────────────────┐
+│ BaseExtractor (interface)     │  ← src/extractor.py
+│  - extract(image_path)        │  - retry/rate-limit handling
+│  - returns BillExtraction     │  - registry (@register_extractor)
+└──────────────┬────────────────┘
+               │
+       ┌───────┼────────┐
+       ▼       ▼        ▼
+   Gemini   Nemotron  Gemma
+   3.1      Nano     4 31B
+   Flash     12B VL   (OpenRouter)
+   Lite     (OpenRouter)
+       │       │        │
+       └───────┼────────┘
+               ▼
+┌───────────────────────────────┐
+│ Evaluator                     │  ← src/evaluator.py
+│  - per-field scoring          │
+│  - cost tracking              │
+│  - accuracy/cost tables       │
+└──────────────┬────────────────┘
+               ▼
+┌───────────────────────────────┐
+│ Zoho Books integration        │  ← src/zoho_integration.py
+│  - OAuth2 + token refresh     │
+│  - create expense from fields │
+└───────────────────────────────┘
 ```
 
-The common interface (`BaseExtractor`) ensures all models are called the same way. The `@register_extractor` decorator lets new models be added by simply creating a new class and registering it.
+All models get the **same prompt** (`EXTRACTION_PROMPT` in `src/extractor.py`)
+and the same `temperature=0.1`, JSON-mode request. The registry pattern means a
+new model is added by writing one class — no pipeline changes.
 
 ## Limitations (Honest)
 
-1. **Small dataset (10–15 bills):** Results are indicative, not statistically significant. A model could get lucky or unlucky on this small sample.
-
-2. **Ground truth is subjective:** I defined "correct" for each bill based on my own reading. Another person might interpret a smudged digit differently. This is inherent to handwritten documents.
-
-3. **No illegibility scoring:** A model that returns `null` for an unreadable field is scored the same as a model that confidently returns the wrong value. A more sophisticated eval would reward appropriate uncertainty.
-
-4. **Single prompt, no iteration:** Each model gets the exact same prompt with no few-shot examples or chain-of-thought. Better prompting could improve results for any model.
-
-5. **No latency measurement:** For a real production pipeline, latency matters. We only track cost and accuracy.
-
-6. **Currency/regional bias:** All bills are Indian rupees. The results may not generalize to other currencies or receipt formats.
-
-7. **Free tier limitations:** Gemini's free tier has rate limits (5–15 RPM). For larger batches, paid tier would be needed.
+1. **Small dataset (13 handwritten + 3 digital).** Indicative, not statistically
+   significant. One bad bill can move a metric ~8 points.
+2. **Ground truth is subjective** — one person's reading of smudged handwriting.
+3. **No illegibility scoring.** Returning `null` vs inventing a value is
+   *penalized differently* (null when truth is null = correct; hallucination = 0),
+   but we don't separately reward a model for *flagging* uncertainty via
+   `illegible_fields`. Known gap.
+4. **Single prompt, no few-shot / CoT.** Every model could improve with tuning.
+5. **No latency measurement.**
+6. **Regional bias** — all Indian bills, INR. Results may not generalize.
+7. **Synthetic digital invoices** — clean renders; real scanned documents are messier.
+8. **Free-tier flakiness** — OpenRouter `:free` endpoints return transient
+   errors/congestion; our retry logic handles it but it's noisy and could bias
+   results if a bill only succeeds after retries.
 
 ## What I'd Do Differently With More Time
 
-1. **Add illegibility scoring:** Track whether models appropriately flag uncertain fields as illegible rather than hallucinating.
-2. **Multi-prompt strategies:** Try few-shot prompting and chain-of-thought to improve extraction.
-3. **Stratified sampling:** More bills across different Indian states to test GST format variations.
-4. **Human baseline:** Have a second person annotate the same bills to measure inter-annotator agreement on ground truth.
-5. **Latency benchmarks:** Time each extraction to compare speed alongside cost and accuracy.
-6. **Confidence scores:** Request confidence/probability scores per field from each model.
+1. **Illegibility scoring** (reward "I can't read this" over confident guessing).
+2. **Multi-prompt strategies** (few-shot, CoT) — the single-prompt setup probably
+   understates what each model can do.
+3. **Bigger, stratified dataset** (more states, GST-format variety, tilted/skewed scans).
+4. **Second annotator** for inter-annotator agreement on ground truth.
+5. **Latency benchmarks** alongside cost and accuracy.
+6. **Ensembling / confidence routing** — send only the hard cases to the premium model.
