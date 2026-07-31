@@ -24,7 +24,8 @@ Thumbs.db
 .DS_Store
 
 # Data - keep sample bill images out of repo by default
-raw_photos/                 # UNREDACTED originals - NEVER commit these
+# UNREDACTED originals - NEVER commit these
+raw_photos/
 data/samples/*.jpg
 data/samples/*.jpeg
 data/samples/*.png
