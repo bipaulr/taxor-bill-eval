@@ -33,6 +33,9 @@ class BillExtraction(BaseModel):
     currency: str | None = "INR"  # ISO 4217
     tax_gst: TaxGST | None = None
 
+    # Language of the bill text (e.g. "en", "ml" for Malayalam)
+    language: str | None = None
+
     # Confidence / legibility flag
     illegible_fields: list[str] = []
     raw_text: str | None = None  # model's free-text notes
@@ -42,7 +45,7 @@ class BillExtraction(BaseModel):
 EXTRACTION_PROMPT = """You are a bill/receipt data extraction assistant. Extract the following fields from this Indian bill image and return ONLY valid JSON (no markdown, no explanation) with this exact schema:
 
 {
-  "vendor_name": "Shop or vendor name (if visible, else null)",
+  "vendor_name": "Shop or vendor name, written EXACTLY as on the bill (keep the original script, e.g. Malayalam if written in Malayalam). If not visible, null",
   "invoice_number": "Bill/invoice number if present, else null",
   "date": "Date in YYYY-MM-DD format (if visible, else null)",
   "amount": "Total amount as a number (0.00 format, if visible, else null)",
@@ -52,12 +55,14 @@ EXTRACTION_PROMPT = """You are a bill/receipt data extraction assistant. Extract
     "gst_amount": "Total GST/tax amount as a number if visible, else null",
     "taxable_value": "Taxable value before tax if visible, else null"
   },
+  "language": "Language of the bill's main text (ISO 639-1, e.g. 'en', 'ml', 'hi')",
   "illegible_fields": ["list any fields above that are cut off, smudged, or unreadable"],
   "raw_text": "Any additional free-text observations about the bill"
 }
 
 Important rules:
-- If a field is not visible or readable, set it to null — do not make up values.
+- If a field is not visible or readable, set it to null — do not make up values. Never invent an invoice number or GST number.
+- vendor_name must keep the ORIGINAL script and spelling exactly as printed/written (do not transliterate).
 - For amounts, extract the numeric value without currency symbols.
 - For dates, convert to YYYY-MM-DD. If month/day order is ambiguous, use Indian convention (DD/MM/YYYY).
 - List any fields you're uncertain about in the illegible_fields array.

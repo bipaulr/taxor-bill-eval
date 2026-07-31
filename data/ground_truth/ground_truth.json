@@ -31,6 +31,18 @@
     "illegible_fields": {
       "method": "not scored (flagged as limitation)",
       "rationale": "Models can mark fields as illegible. We note this but do not currently score it. A model that admits uncertainty is arguably better than one that hallucinates, but our scoring treats both as incorrect. This is a documented gap."
+    },
+    "language": {
+      "method": "exact (ISO 639-1)",
+      "rationale": "We track the bill's language to measure multilingual robustness. Some bills are in Malayalam (ml). Not scored in the accuracy table; reported separately."
+    },
+    "multilingual_handling": {
+      "method": "vendor_name kept in original script",
+      "rationale": "For non-English bills, ground truth stores the vendor name in the ORIGINAL script (e.g. Malayalam) exactly as printed. This avoids transliteration ambiguity ('Krishna' vs 'Krishnan' vs 'Krsna'). Fuzzy matching is character-based and works on any Unicode script."
+    },
+    "absent_fields": {
+      "method": "null in ground truth means the field does not exist on the bill",
+      "rationale": "Most bills here have NO invoice number. Ground truth = null. A model is correct only if it also returns null. Returning a made-up invoice number is penalized as a hallucination — so invoice_number accuracy measures model honesty, not just reading skill."
     }
   },
   "bills": [
@@ -84,6 +96,40 @@
         }
       },
       "notes": "GST-registered hardware store. Invoice number printed. Handwritten item list."
+    },
+    {
+      "bill_id": "bill_004",
+      "image_file": "bill_004.jpg",
+      "ground_truth": {
+        "vendor_name": "കൃഷ്ണ സ്റ്റോർ",
+        "invoice_number": null,
+        "date": "2025-02-11",
+        "amount": 340.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Malayalam-language bill (ml). Vendor name in original Malayalam script. No invoice number, no GST."
+    },
+    {
+      "bill_id": "bill_005",
+      "image_file": "bill_005.jpg",
+      "ground_truth": {
+        "vendor_name": "അനശ്വര ജനറൽ സ്റ്റോഴ്സ്",
+        "invoice_number": null,
+        "date": "2025-07-05",
+        "amount": 785.25,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Malayalam bill (ml), partially English mixed in item names. Tests mixed-script handling. No invoice number."
     }
   ]
 }

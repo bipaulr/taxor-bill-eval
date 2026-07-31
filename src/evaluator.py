@@ -90,8 +90,10 @@ FUZZY_THRESHOLD = 0.85
 
 
 def score_vendor_name(pred: str | None, truth: str | None) -> float:
+    # Correct semantics: if the field doesn't exist on the bill (truth None),
+    # the model must also return None. Inventing a value is a hallucination → 0.
     if truth is None:
-        return 1.0  # nothing to extract — skip
+        return 1.0 if pred is None else 0.0
     if pred is None:
         return 0.0
     if truth.lower().strip() == pred.lower().strip():
@@ -101,7 +103,7 @@ def score_vendor_name(pred: str | None, truth: str | None) -> float:
 
 def score_exact(pred: str | float | None, truth: str | float | None) -> float:
     if truth is None:
-        return 1.0
+        return 1.0 if pred is None else 0.0
     if pred is None:
         return 0.0
     return 1.0 if str(pred).strip() == str(truth).strip() else 0.0
@@ -109,7 +111,7 @@ def score_exact(pred: str | float | None, truth: str | float | None) -> float:
 
 def score_amount(pred: float | None, truth: float | None) -> float:
     if truth is None:
-        return 1.0
+        return 1.0 if pred is None else 0.0
     if pred is None:
         return 0.0
     return 1.0 if abs(float(pred) - float(truth)) <= 0.01 else 0.0
@@ -118,7 +120,7 @@ def score_amount(pred: float | None, truth: float | None) -> float:
 def score_date(pred: str | None, truth: str | None) -> float:
     """Exact match after normalizing both to YYYY-MM-DD."""
     if truth is None:
-        return 1.0
+        return 1.0 if pred is None else 0.0
     if pred is None:
         return 0.0
     # Normalize: remove leading/trailing whitespace
@@ -127,8 +129,13 @@ def score_date(pred: str | None, truth: str | None) -> float:
 
 def score_tax_gst(pred: dict | None, truth: dict | None) -> float:
     """Partial credit across gst_number, gst_amount, taxable_value."""
-    if truth is None or all(v is None for v in truth.values()):
-        return 1.0  # nothing to extract — skip
+    # If no tax details exist on the bill, the model must not invent any.
+    truth_has_none = truth is None or all(v is None for v in (truth or {}).values())
+    if truth_has_none:
+        pred_has_something = bool(pred) and any(
+            v is not None for v in pred.values()
+        )
+        return 1.0 if not pred_has_something else 0.0
 
     pred = pred or {}
     sub_scores = []

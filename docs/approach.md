@@ -44,7 +44,7 @@ Each field uses a different match strategy, chosen to reflect the real-world cos
 
 ### Important caveats
 
-- **Null handling:** If a field is absent from the ground truth (e.g. no invoice number on a shop receipt), it's excluded from scoring for that bill. We only penalize models for fields that actually exist.
+- **Null handling:** If a field is absent from the ground truth (e.g. no invoice number on a shop receipt), it's **not skipped** — the model must also return null. Returning a made-up value is penalized as a **hallucination** (score 0). This makes `invoice_number` and `tax_gst` accuracy metrics of model *honesty*, not just reading skill. Most bills in this dataset have no invoice number, so this penalization matters a lot.
 - **Illegibility flagging:** Models can mark fields as `illegible` in the output. This is noted but not currently scored as a separate metric — a model that says "I can't read this" is arguably better than one that hallucinates. This is a known gap (see Limitations).
 
 ## Cost Tracking
