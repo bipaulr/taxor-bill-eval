@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BillEval — Model Comparison</title>
+<style>
+  :root { --border:#ddd; --head-bg:#f5f5f5; --null:#999; --err:#b00020; --ok:#0a7d32; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: #fafafa; color: #222; }
+  header { background: #1f2a44; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .8; }
+  main { max-width: 1080px; margin: 24px auto; padding: 0 16px; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .drop { border: 2px dashed var(--border); border-radius: 8px; padding: 28px; text-align: center; cursor: pointer; }
+  .drop.drag { border-color: #1f2a44; background: #eef1f8; }
+  .drop input { display: none; }
+  #file-name { margin-top: 10px; font-size: 14px; color: #555; }
+  button { margin-top: 14px; background: #1f2a44; color: #fff; border: 0; padding: 10px 22px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { margin-top: 12px; font-size: 14px; }
+  .err { color: var(--err); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--head-bg); font-weight: 600; }
+  td.field { font-weight: 600; width: 130px; background: #fcfcfc; }
+  .null { color: var(--null); font-style: italic; }
+  .moderr { color: var(--err); font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+  .meta { color: #555; font-size: 12px; }
+  .model-col h3 { margin: 0 0 4px; font-size: 14px; }
+  code { background: #f2f2f2; padding: 1px 5px; border-radius: 4px; font-size: 12px; word-break: break-word; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BillEval — Handwritten Bill Extraction</h1>
+  <p>Upload a bill image and compare extraction accuracy across vision models.</p>
+</header>
+
+<main>
+  <div class="card">
+    <div class="drop" id="drop">
+      <input type="file" id="file" accept=".jpg,.jpeg,.png,.webp">
+      <div><strong>Click or drop a bill image here</strong></div>
+      <div class="meta" style="margin-top:6px;">JPG / PNG / WEBP · the image is sent only to the configured model APIs</div>
+      <div id="file-name"></div>
+    </div>
+    <button id="btn" disabled>Extract with all models</button>
+    <div id="status" class="status hidden"></div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="card" style="overflow-x:auto;">
+      <h2 style="margin-top:0; font-size:16px;">Extracted fields — side by side</h2>
+      <table id="tbl"></table>
+    </div>
+  </div>
+</main>
+
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('file');
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  const results = document.getElementById('results');
+  const tbl = document.getElementById('tbl');
+  const fileName = document.getElementById('file-name');
+  let selectedFile = null;
+
+  function setFile(f) {
+    if (!f) return;
+    selectedFile = f;
+    fileName.textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
+    btn.disabled = false;
+  }
+
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag'); setFile(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', () => setFile(fileInput.files[0]));
+
+  btn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    btn.disabled = true;
+    status.classList.remove('hidden');
+    status.textContent = 'Extracting… this can take up to a minute per model.';
+    status.className = 'status';
+    results.classList.add('hidden');
+
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    try {
+      const resp = await fetch('/api/extract', { method: 'POST', body: fd });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || 'Request failed');
+      render(data);
+      status.textContent = 'Done.';
+      status.className = 'status';
+    } catch (e) {
+      status.textContent = 'Error: ' + e.message;
+      status.className = 'status err';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  const FIELD_LABELS = {
+    vendor_name: 'Vendor', invoice_number: 'Invoice #', date: 'Date', amount: 'Amount',
+    currency: 'Currency', tax_gst: 'Tax / GST', language: 'Language',
+    illegible_fields: 'Illegible fields', raw_text: 'Raw notes'
+  };
+
+  function render(data) {
+    const models = data.models;
+    const resultsData = data.results;
+    results.classList.remove('hidden');
+
+    // Header row
+    let head = '<tr><th class="field">Field</th>';
+    for (const m of models) {
+      head += '<th><div class="model-col"><h3>' + esc(m) + '</h3></div></th>';
+    }
+    head += '</tr>';
+    tbl.innerHTML = head;
+
+    // One row per field
+    for (const [key, label] of Object.entries(FIELD_LABELS)) {
+      let row = '<tr><td class="field">' + label + '</td>';
+      for (const m of models) {
+        const r = resultsData[m] || {};
+        if (r.error) { row += '<td class="moderr">' + esc(r.error) + '</td>'; continue; }
+        const v = (r.fields || {})[key];
+        if (key === 'tax_gst') {
+          row += '<td>' + (v ? '<code>' + esc(JSON.stringify(v)) + '</code>' : '<span class="null">—</span>') + '</td>';
+        } else if (v === null || v === undefined) {
+          row += '<td><span class="null">—</span></td>';
+        } else {
+          row += '<td>' + esc(String(v)) + '</td>';
+        }
+      }
+      row += '</tr>';
+      tbl.insertAdjacentHTML('beforeend', row);
+    }
+
+    // Token / cost row
+    let meta = '<tr><td class="field">Tokens (in/out) · cost</td>';
+    for (const m of models) {
+      const r = resultsData[m] || {};
+      const t = r.tokens || {};
+      const cost = (r.cost !== undefined && r.cost !== null) ? Number(r.cost).toFixed(6) : '—';
+      meta += '<td class="meta">' + (t.in || 0) + ' / ' + (t.out || 0) + ' · $' + cost + '</td>';
+    }
+    meta += '</tr>';
+    tbl.insertAdjacentHTML('beforeend', meta);
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+</script>
+</body>
+</html>

@@ -48,6 +48,7 @@ def cmd_evaluate(args):
         output_dir=args.output,
         request_delay=args.delay,
         dataset=args.dataset,
+        save_predictions=args.save_predictions,
     )
 
     # Print summary
@@ -120,6 +121,11 @@ def main():
         "--dataset",
         default="handwritten",
         help='Dataset label for results (e.g. "handwritten" or "digital")',
+    )
+    p_eval.add_argument(
+        "--save-predictions",
+        action="store_true",
+        help="Also save raw per-model predictions to eval/results/predictions/",
     )
     p_eval.add_argument(
         "--delay",

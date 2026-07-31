@@ -219,6 +219,7 @@ def run_evaluation(
     output_dir: str = "eval/results",
     request_delay: float = 13.0,
     dataset: str = "handwritten",
+    save_predictions: bool = False,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Run full evaluation:
@@ -311,6 +312,17 @@ def run_evaluation(
             cost_rows.append(cost_info)
             print(f"  Cost: ${cost_info['cost_per_bill']:.6f}/bill")
             print(f"        ${cost_info['cost_per_100_bills']:.4f}/100 bills")
+
+        # Optionally persist raw predictions (needed for the Zoho push step).
+        if save_predictions:
+            pred_dir = os.path.join(output_dir, "predictions")
+            os.makedirs(pred_dir, exist_ok=True)
+            ok_predictions = [p for p in predictions if "_error" not in p]
+            safe_name = model_name.replace("/", "_").replace(":", "_")
+            pred_path = os.path.join(pred_dir, f"{dataset}_{safe_name}.json")
+            with open(pred_path, "w", encoding="utf-8") as f:
+                json.dump(ok_predictions, f, indent=2, ensure_ascii=False)
+            print(f"  Saved {len(ok_predictions)} predictions to {pred_path}")
 
     # Build accuracy table (per model, per field — average across bills)
     scores_df = pd.DataFrame(all_scores)
