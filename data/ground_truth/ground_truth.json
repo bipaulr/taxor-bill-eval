@@ -38,7 +38,7 @@
     },
     "multilingual_handling": {
       "method": "vendor_name kept in original script",
-      "rationale": "For non-English bills, ground truth stores the vendor name in the ORIGINAL script (e.g. Malayalam) exactly as printed. This avoids transliteration ambiguity ('Krishna' vs 'Krishnan' vs 'Krsna'). Fuzzy matching is character-based and works on any Unicode script."
+      "rationale": "For non-English bills, ground truth stores the vendor name in the ORIGINAL script (e.g. Malayalam) exactly as printed. This avoids transliteration ambiguity. Fuzzy matching is character-based and works on any Unicode script."
     },
     "absent_fields": {
       "method": "null in ground truth means the field does not exist on the bill",
@@ -47,13 +47,14 @@
   },
   "bills": [
     {
-      "bill_id": "bill_001",
-      "image_file": "bill_001.jpg",
+      "bill_id": "bill_01",
+      "image_file": "bill_01.jpeg",
+      "language": "en",
       "ground_truth": {
-        "vendor_name": "Sri Krishna Provision Store",
+        "vendor_name": null,
         "invoice_number": null,
-        "date": "2025-03-15",
-        "amount": 456.50,
+        "date": "2026-07-07",
+        "amount": 500.00,
         "currency": "INR",
         "tax_gst": {
           "gst_number": null,
@@ -61,16 +62,17 @@
           "taxable_value": null
         }
       },
-      "notes": "Handwritten ledger-style bill, no GST registered. Shop name written as 'Sri Krishna Prov. Store'."
+      "notes": "No vendor name mentioned on the bill. Date 7/7/2026. Amount 500."
     },
     {
-      "bill_id": "bill_002",
-      "image_file": "bill_002.jpg",
+      "bill_id": "bill_02",
+      "image_file": "bill_02.jpeg",
+      "language": "en",
       "ground_truth": {
-        "vendor_name": "Anand Medicals",
+        "vendor_name": "C store",
         "invoice_number": null,
-        "date": "2025-06-20",
-        "amount": 1280.00,
+        "date": "2026-07-20",
+        "amount": 400.00,
         "currency": "INR",
         "tax_gst": {
           "gst_number": null,
@@ -78,33 +80,17 @@
           "taxable_value": null
         }
       },
-      "notes": "Handwritten medical store bill. Amount includes medicine costs, no tax breakdown."
+      "notes": "Vendor name 'C store'. Date 20/7/26. Amount 400."
     },
     {
-      "bill_id": "bill_003",
-      "image_file": "bill_003.jpg",
+      "bill_id": "bill_03",
+      "image_file": "bill_03.jpeg",
+      "language": "en",
       "ground_truth": {
-        "vendor_name": "Ramesh Hardware & Electricals",
-        "invoice_number": "INV-2025-0891",
-        "date": "2025-04-10",
-        "amount": 2340.75,
-        "currency": "INR",
-        "tax_gst": {
-          "gst_number": "29ABCDE1234F1Z5",
-          "gst_amount": 210.67,
-          "taxable_value": 2130.08
-        }
-      },
-      "notes": "GST-registered hardware store. Invoice number printed. Handwritten item list."
-    },
-    {
-      "bill_id": "bill_004",
-      "image_file": "bill_004.jpg",
-      "ground_truth": {
-        "vendor_name": "കൃഷ്ണ സ്റ്റോർ",
+        "vendor_name": "star times",
         "invoice_number": null,
-        "date": "2025-02-11",
-        "amount": 340.00,
+        "date": "2026-07-14",
+        "amount": 250.00,
         "currency": "INR",
         "tax_gst": {
           "gst_number": null,
@@ -112,16 +98,17 @@
           "taxable_value": null
         }
       },
-      "notes": "Malayalam-language bill (ml). Vendor name in original Malayalam script. No invoice number, no GST."
+      "notes": "Vendor name 'star times'. Date 14/07/2026. Amount 250."
     },
     {
-      "bill_id": "bill_005",
-      "image_file": "bill_005.jpg",
+      "bill_id": "bill_04",
+      "image_file": "bill_04.jpeg",
+      "language": "en",
       "ground_truth": {
-        "vendor_name": "അനശ്വര ജനറൽ സ്റ്റോഴ്സ്",
+        "vendor_name": null,
         "invoice_number": null,
-        "date": "2025-07-05",
-        "amount": 785.25,
+        "date": "2026-07-21",
+        "amount": 180.00,
         "currency": "INR",
         "tax_gst": {
           "gst_number": null,
@@ -129,7 +116,169 @@
           "taxable_value": null
         }
       },
-      "notes": "Malayalam bill (ml), partially English mixed in item names. Tests mixed-script handling. No invoice number."
+      "notes": "No vendor name mentioned. Date 21/07/2026. Amount 180."
+    },
+    {
+      "bill_id": "bill_05",
+      "image_file": "bill_05.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "Bravia Fried",
+        "invoice_number": null,
+        "date": null,
+        "amount": 500.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'Bravia Fried'. No date visible. Amount 500."
+    },
+    {
+      "bill_id": "bill_06",
+      "image_file": "bill_06.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "Lourd Flowers",
+        "invoice_number": null,
+        "date": "2026-07-05",
+        "amount": 350.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'Lourd Flowers'. Date 5/7/26. Amount 350."
+    },
+    {
+      "bill_id": "bill_07",
+      "image_file": "bill_07.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "Best Electricals & Sanitaries",
+        "invoice_number": null,
+        "date": "2026-07-06",
+        "amount": 50.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'Best Electricals & Sanitaries'. Date 6/7/26. Amount 50."
+    },
+    {
+      "bill_id": "bill_08",
+      "image_file": "bill_08.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "Animalia Veterinary Clinic",
+        "invoice_number": null,
+        "date": "2026-07-17",
+        "amount": 830.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'Animalia Veterinary Clinic'. Date 17/7/26. Amount 830."
+    },
+    {
+      "bill_id": "bill_09",
+      "image_file": "bill_09.jpeg",
+      "language": "ml",
+      "ground_truth": {
+        "vendor_name": "M.S Fruits & Vegetables",
+        "invoice_number": null,
+        "date": "2026-07-27",
+        "amount": 134.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Mixed-language bill: item names in Malayalam, store name in English 'M.S Fruits & Vegetables'. Date 27/7/26. Amount 134."
+    },
+    {
+      "bill_id": "bill_10",
+      "image_file": "bill_10.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "MM Chicken",
+        "invoice_number": null,
+        "date": "2026-07-25",
+        "amount": 364.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'MM Chicken'. Date 25/7/26. Amount 364."
+    },
+    {
+      "bill_id": "bill_11",
+      "image_file": "bill_11.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "The Queens Patisserie",
+        "invoice_number": null,
+        "date": "2026-07-22",
+        "amount": 250.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'The Queens Patisserie'. Date '22/7' with no year — assumed 2026 (consistent with other bills). Amount 250."
+    },
+    {
+      "bill_id": "bill_12",
+      "image_file": "bill_12.jpeg",
+      "language": "en",
+      "ground_truth": {
+        "vendor_name": "RAGAM BEAUTY CENTRE",
+        "invoice_number": null,
+        "date": "2026-07-01",
+        "amount": 75.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Vendor name 'RAGAM BEAUTY CENTRE'. Date 1/7/2026. Amount 75."
+    },
+    {
+      "bill_id": "bill_13",
+      "image_file": "bill_13.jpeg",
+      "language": "ml",
+      "ground_truth": {
+        "vendor_name": null,
+        "invoice_number": null,
+        "date": null,
+        "amount": 658.00,
+        "currency": "INR",
+        "tax_gst": {
+          "gst_number": null,
+          "gst_amount": null,
+          "taxable_value": null
+        }
+      },
+      "notes": "Malayalam bill with item list. No vendor name or date visible. Total amount 658."
     }
   ]
 }
