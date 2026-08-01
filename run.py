@@ -157,6 +157,12 @@ def main():
 
 
 if __name__ == "__main__":
+    # Malayalam bill names would crash a cp1252 console — force UTF-8 output.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
     main()
 
 

@@ -19,9 +19,27 @@ import httpx
 
 from src.config import settings
 
-# Zoho Books API base URL
-ZOHO_BASE_URL = "https://www.zohoapis.com/books/v3"
-ZOHO_ACCOUNTS_URL = "https://accounts.zoho.com"
+# Zoho Books API base URLs — data-center aware.
+# Zoho uses a different host per region; the OAuth endpoint must match the
+# region the account was created in (e.g. Indian accounts use zoho.in).
+ZOHO_HOSTS = {
+    "com": ("https://accounts.zoho.com", "https://www.zohoapis.com"),
+    "in": ("https://accounts.zoho.in", "https://www.zohoapis.in"),
+    "eu": ("https://accounts.zoho.eu", "https://www.zohoapis.eu"),
+    "au": ("https://accounts.zoho.com.au", "https://www.zohoapis.com.au"),
+    "cn": ("https://accounts.zoho.com.cn", "https://www.zohoapis.com.cn"),
+}
+
+
+def _zoho_hosts(data_center: str) -> tuple[str, str]:
+    accounts, api = ZOHO_HOSTS.get(data_center, ZOHO_HOSTS["com"])
+    return accounts, api
+
+
+ZOHO_ACCOUNTS_URL, ZOHO_API_HOST = _zoho_hosts(
+    getattr(settings, "zoho_data_center", "com")
+)
+ZOHO_BASE_URL = f"{ZOHO_API_HOST}/books/v3"
 
 
 class ZohoBooksClient:
@@ -46,6 +64,8 @@ class ZohoBooksClient:
 
         self._access_token: str | None = None
         self._token_expires_at: float = 0
+        self._currency_ids: dict[str, str] = {}
+        self._account_ids: dict[str, str] = {}
 
         # Pre-populated refresh token from .env
         self._refresh_token: str | None = settings.zoho_refresh_token or None
@@ -90,6 +110,46 @@ class ZohoBooksClient:
             "Content-Type": "application/json",
         }
 
+    def _resolve_currency_id(self, currency_code: str | None) -> str | None:
+        """
+        Map an ISO currency code to Zoho's numeric currency_id.
+
+        Zoho's expense API expects a currency_id (numeric), not an ISO code.
+        Cache the org's currency table after the first call.
+        """
+        if not currency_code:
+            return None
+        if currency_code in self._currency_ids:
+            return self._currency_ids[currency_code]
+        resp = httpx.get(
+            f"{ZOHO_BASE_URL}/settings/currencies",
+            params={"organization_id": self.organization_id},
+            headers=self._headers(),
+        )
+        if resp.status_code == 200:
+            for cur in resp.json().get("currencies", []):
+                self._currency_ids[cur["currency_code"]] = cur["currency_id"]
+        return self._currency_ids.get(currency_code)
+
+    def _resolve_account_id(self, account_name: str) -> str | None:
+        """
+        Map a chart-of-accounts name to its account_id.
+
+        The expense API requires account_id (account_name alone is rejected).
+        Cache the org's chart of accounts after the first call.
+        """
+        if account_name in self._account_ids:
+            return self._account_ids[account_name]
+        resp = httpx.get(
+            f"{ZOHO_BASE_URL}/chartofaccounts",
+            params={"organization_id": self.organization_id},
+            headers=self._headers(),
+        )
+        if resp.status_code == 200:
+            for acc in resp.json().get("chartofaccounts", []):
+                self._account_ids[acc["account_name"]] = acc["account_id"]
+        return self._account_ids.get(account_name)
+
     # ── Expense Creation ────────────────────────────────────────────
 
     def create_expense(self, bill_data: dict) -> dict[str, Any]:
@@ -119,17 +179,20 @@ class ZohoBooksClient:
             raise ValueError("amount is required to create an expense in Zoho Books")
 
         currency = bill_data.get("currency") or "INR"
+        currency_id = self._resolve_currency_id(currency)
+        account_id = self._resolve_account_id(settings.zoho_expense_account)
 
         # Zoho Books expense payload
         payload = {
-            "account_name": "Miscellaneous Expenses",  # Default expense account
+            "account_id": account_id,
             "description": f"Bill from {vendor_name}",
             "amount": float(amount),
             "date": date_str,
-            "currency_id": currency,  # Zoho uses currency_id; ISO code often works
             "reference_number": bill_data.get("invoice_number") or "",
             "vendor_name": vendor_name,
         }
+        if currency_id:
+            payload["currency_id"] = currency_id
 
         # Add tax details if available
         tax_gst = bill_data.get("tax_gst") or {}
@@ -166,7 +229,7 @@ class ZohoBooksClient:
         predictions_file should be a JSON array of BillExtraction dicts
         (as produced by the extraction pipeline).
         """
-        with open(predictions_file) as f:
+        with open(predictions_file, encoding="utf-8") as f:
             predictions = json.load(f)
 
         if max_bills:

@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     zoho_refresh_token: str = ""
     zoho_organization_id: str = ""
     zoho_redirect_uri: str = "https://www.zoho.com/books/"
+    # Data center region: com (US/Global), in (India), eu (Europe), au (Australia), cn (China)
+    zoho_data_center: str = "in"
+    # Expense account to book extracted bills under (must exist in the org's chart of accounts)
+    zoho_expense_account: str = "Uncategorized"
 
     # Extraction defaults
     default_model: str = "gemini-2.5-flash"
