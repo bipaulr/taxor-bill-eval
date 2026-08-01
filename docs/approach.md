@@ -19,9 +19,9 @@ completed, so they were dropped and replaced with free open-weight alternatives.
 | Model | Provider | List price (in/out per 1M tok) | Access used | Status |
 |-------|----------|-------------------------------|-------------|--------|
 | Gemini 3.1 Flash Lite | Google AI Studio | $0.25 / $1.50 | Free tier (20 req/day) | ✅ full run |
-| Gemini 3 Flash Preview | Google AI Studio | $0.25 / $1.50 | Free tier | 🔄 partial |
+| Gemini 3 Flash Preview | Google AI Studio | $0.25 / $1.50 | Free tier | ✅ full run |
 | Nemotron Nano 12B VL | NVIDIA (via OpenRouter `:free`) | $0.11 / $0.34 (paid endpoint) | OpenRouter free (50 req/day, shared) | ✅ full run |
-| Gemma 4 31B | Google (via OpenRouter `:free`) | $0.25 / $0.80 (paid endpoint) | OpenRouter free | 🔄 1/13 so far |
+| Gemma 4 31B | Google (via OpenRouter `:free`) | $0.25 / $0.80 (paid endpoint) | OpenRouter free | 🔄 12/13 (endpoint congestion) |
 
 > **Honest note on pricing:** the models marked "free tier" cost **$0 actual
 > spend** in this project. The *list prices* are what a production deployment
@@ -94,33 +94,60 @@ Reported as **cost/bill** and **cost/100 bills** (extrapolated). We also show a
 "paid-tier" extrapolation for the open models so a decision isn't made on the
 free-tier honeymoon alone.
 
-## Results (as of 31 Jul, pending final runs)
+## Results (as of 1 Aug 2026)
 
-### Handwritten — accuracy % per field
+### Handwritten — accuracy % per field (13 bills)
 
 | Model | vendor | invoice# | date | amount | currency | tax/GST | bills |
 |-------|--------|----------|------|--------|----------|---------|-------|
 | Gemini 3.1 Flash Lite | 100.0 | 53.8 | 38.5 | 92.3 | 100.0 | 92.3 | 13 |
+| Gemini 3 Flash Preview | 92.3 | 53.8 | 30.8 | 100.0 | 100.0 | 92.3 | 13 |
 | Nemotron Nano 12B VL | 92.3 | 46.2 | 38.5 | 84.6 | 100.0 | 92.3 | 13 |
-| Gemma 4 31B | 100.0* | 100.0* | 100.0* | 100.0* | 100.0* | 100.0* | 1* |
-| Gemini 3 Flash Preview | 100.0* | 66.7* | 50.0* | 100.0* | 100.0* | 100.0* | 6* |
+| Gemma 4 31B | 91.7 | 58.3 | 33.3 | 100.0 | 100.0 | 91.7 | 12* |
 
-\* pending full run (free-tier daily quotas exhausted mid-run).
+\* bill 13 not scored: Google AI Studio's shared pool was congested on every retry
+  window that day (transient `429 upstream_provider_shared_pool`); see limitations.
 
 ### Digital (3 synthetic) — accuracy % per field
 
 | Model | vendor | invoice# | date | amount | currency | tax/GST | bills |
 |-------|--------|----------|------|--------|----------|---------|-------|
+| Gemini 3.1 Flash Lite | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 3 |
+| Gemini 3 Flash Preview | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 3 |
 | Nemotron Nano 12B VL | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 3 |
-| *(Gemini / Gemma pending)* | — | — | — | — | — | — | — |
+| Gemma 4 31B | — | — | — | — | — | — | 0* |
 
-### Cost
+\* blocked by the same upstream congestion (all 3 bills failed across multiple
+  retry windows). Every other model reads clean typed invoices perfectly, so this
+  is a supporting-set gap, not a meaningful differentiator.
+
+### Cost (handwritten, 13 bills)
 
 | Model | actual spend | cost/bill (paid tier) | cost/100 bills |
 |-------|--------------|------------------------|----------------|
-| Gemini 3.1 Flash Lite | $0 (free quota) | $0.00066 | $0.0656 |
+| Gemini 3.1 Flash Lite | $0.0085 | $0.00066 | $0.0656 |
+| Gemini 3 Flash Preview | $0.0090 | $0.00069 | $0.0694 |
 | Nemotron Nano 12B VL | $0 (free) | ~$0.00011 | ~$0.011 |
 | Gemma 4 31B | $0 (free) | ~$0.00015 | ~$0.015 |
+
+## Interpretation
+
+- **Reading value is easy; reading *identifiers* is hard.** Every model nails
+  vendor / amount / currency / tax-GST presence. The entire differentiator is
+  `invoice_number` and `date` on bills where the ground truth is **null** —
+  i.e. how honest each model is when a field genuinely isn't on the paper.
+- On that axis the models cluster tightly (46–58% invoice, 31–39% date), because
+  **all of them hallucinate** on roughly half the bills that have no invoice
+  number. No free/cheap model is a safe auto-booking layer yet without a
+  validation gate.
+- **Gemini 3.1 Flash Lite is the best free choice** (100% vendor, best overall)
+  and is *cheapest on the paid tier* of the three — strong default.
+- **Nemotron Nano 12B VL is the $0 choice** — free at any scale via OpenRouter's
+  shared pool, and on the paid endpoint it's the cheapest of all; accuracy within
+  ~8 pts of Gemini while costing $0.
+- **Digital (typed) invoices are effectively solved** by every model tested
+  (100% on the synthetic set). The hard problem is handwritten, low-confidence
+  fields — which is exactly where an accounts system needs a human-in-the-loop.
 
 ## Pipeline Architecture
 

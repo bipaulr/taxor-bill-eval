@@ -19,15 +19,28 @@ Built for the Taxor Software Engineering Internship screening task.
 | Model | vendor | invoice# | date | amount | currency | tax/GST | bills |
 |-------|--------|----------|------|--------|----------|---------|-------|
 | Gemini 3.1 Flash Lite | 100.0 | 53.8 | 38.5 | 92.3 | 100.0 | 92.3 | 13 |
+| Gemini 3 Flash Preview | 92.3 | 53.8 | 30.8 | 100.0 | 100.0 | 92.3 | 13 |
 | Nemotron Nano 12B VL | 92.3 | 46.2 | 38.5 | 84.6 | 100.0 | 92.3 | 13 |
-| Gemma 4 31B | *pending* | | | | | | |
-| Gemini 3 Flash Preview | *pending* | | | | | | |
+| Gemma 4 31B | 91.7 | 58.3 | 33.3 | 100.0 | 100.0 | 91.7 | 12* |
 
-### Cost per bill (paid-tier list price; actual spend was $0 on free tiers)
+\* bill 13 + all 3 digital bills blocked by Google AI Studio upstream congestion
+  on the run day (transient `429 upstream_provider_shared_pool`).
+
+### Digital (3 synthetic typed invoices) — accuracy % per field
+
+| Model | vendor | invoice# | date | amount | currency | tax/GST |
+|-------|--------|----------|------|--------|----------|---------|
+| Gemini 3.1 Flash Lite | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Gemini 3 Flash Preview | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Nemotron Nano 12B VL | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Gemma 4 31B | — | — | — | — | — | — (congestion) |
+
+### Cost per bill (paid-tier list price; actual spend was ~$0.017 total on free tiers)
 
 | Model | cost/bill | cost/100 bills |
 |-------|-----------|----------------|
 | Gemini 3.1 Flash Lite | $0.00066 | $0.0656 |
+| Gemini 3 Flash Preview | $0.00069 | $0.0694 |
 | Nemotron Nano 12B VL | ~$0.00011 | ~$0.011 |
 | Gemma 4 31B | ~$0.00015 | ~$0.015 |
 
@@ -158,16 +171,23 @@ taxor/
 
 Full rationale: [docs/approach.md](docs/approach.md).
 
-## Recommendation (preliminary — finalizes after pending runs)
+## Recommendation
 
-Based on complete data: **Gemini 3.1 Flash Lite** reads handwritten bills most
-accurately (100% vendor, 92.3% amount) for ~$0.066 per 100 bills at list price.
-**Nemotron Nano 12B VL** is a credible **$0** fallback (92.3% / 84.6%) if cost
-matters more than a few points of accuracy — and it nailed the digital set
-(100% everywhere), suggesting a cheap open model may be enough for typed docs
-while the stronger model is reserved for handwriting.
+**Gemini 3.1 Flash Lite** is the best free choice: it reads handwritten bills
+most accurately (100% vendor, best overall row) for ~$0.066 per 100 bills at
+list price.
 
-The pending Gemma / Flash Preview runs will confirm whether this holds.
+**Nemotron Nano 12B VL** is a credible **$0** fallback (92.3% / 84.6%) for
+open-weight deployments — on the paid endpoint it's the cheapest of all models.
+
+**Headline caveat:** every model hallucinates invoice numbers / dates on roughly
+half the handwritten bills that genuinely lack them (46–58% and 31–39% accuracy
+where the correct answer is "null"). Digital/typed invoices are effectively
+solved by all models (100% on the synthetic set) — the handwritten, low-confidence
+field is exactly where an accounting integration needs a validation gate before
+auto-booking.
+
+Full interpretation: [docs/approach.md](docs/approach.md).
 
 ## Limitations
 
