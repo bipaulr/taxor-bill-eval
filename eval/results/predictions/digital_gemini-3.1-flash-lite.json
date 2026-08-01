@@ -1,0 +1,56 @@
+[
+  {
+    "vendor_name": "BALAJI SUPER MART",
+    "invoice_number": "INV-2026-0147",
+    "date": "2026-07-18",
+    "amount": 987.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCT4781F1Z8",
+      "gst_amount": 47.0,
+      "taxable_value": 940.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill is for Balaji Super Mart, located at 12, Gandhi Market Road, Ashok Nagar, Bengaluru - 560050. The total amount is 987.00 INR.",
+    "_model": "gemini-3.1-flash-lite",
+    "_input_tokens": 1537,
+    "_output_tokens": 208
+  },
+  {
+    "vendor_name": "AMRITA MEDICAL STORE",
+    "invoice_number": "PH/0761",
+    "date": "2026-07-21",
+    "amount": 325.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill includes items: Paracetamol 650mg, Azithromycin 500mg, Ambroxol Cough Syrup 100ml, and ORS Sachet.",
+    "_model": "gemini-3.1-flash-lite",
+    "_input_tokens": 1537,
+    "_output_tokens": 173
+  },
+  {
+    "vendor_name": "ANNAPOORNA FAMILY RESTAURANT",
+    "invoice_number": "0842",
+    "date": "2026-07-25",
+    "amount": 404.26,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCP3456F1Z2",
+      "gst_amount": 19.26,
+      "taxable_value": 385.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill includes a subtotal of 385.00, with CGST of 9.63 and SGST of 9.63, totaling 404.26.",
+    "_model": "gemini-3.1-flash-lite",
+    "_input_tokens": 1537,
+    "_output_tokens": 203
+  }
+]

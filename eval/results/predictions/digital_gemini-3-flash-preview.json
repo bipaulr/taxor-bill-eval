@@ -1,0 +1,56 @@
+[
+  {
+    "vendor_name": "BALAJI SUPER MART",
+    "invoice_number": "INV-2026-0147",
+    "date": "2026-07-18",
+    "amount": 987.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCT4781F1Z8",
+      "gst_amount": 47.0,
+      "taxable_value": 940.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Address: 12, Gandhi Market Road, Ashok Nagar, Bengaluru - 560050. Ph: 080-2345 6789. Items include Basmati Rice, Toor Dal, Sunflower Oil, and Wheat Atta. Payment method: Cash.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1537,
+    "_output_tokens": 226
+  },
+  {
+    "vendor_name": "AMRITA MEDICAL STORE",
+    "invoice_number": "PH/0761",
+    "date": "2026-07-21",
+    "amount": 325.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Shop No. 4, Main Road, Vyttila, Kochi - 682019. Ph: 0484-230 5567. Salesman: Rakesh. Total Items: 4. Prescription medicines sold only against valid prescription | Subject to Kochi jurisdiction",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1537,
+    "_output_tokens": 199
+  },
+  {
+    "vendor_name": "ANNAPOORNA FAMILY RESTAURANT",
+    "invoice_number": "0842",
+    "date": "2026-07-25",
+    "amount": 404.26,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCP3456F1Z2",
+      "gst_amount": 19.26,
+      "taxable_value": 385.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Address: No. 21, Commercial Street, Bengaluru - 560001. FSSAI: 11521998000987. Table: 12. Time: 8:45 PM. Items include Masala Dosa, Idli Sambar (2 pcs), and Filter Coffee. CGST and SGST are both 2.5%.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1537,
+    "_output_tokens": 248
+  }
+]

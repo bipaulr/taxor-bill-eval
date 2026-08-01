@@ -23,6 +23,11 @@ class OpenRouterExtractor(BaseExtractor):
     input_price_per_1m = 0.0
     output_price_per_1m = 0.0
 
+    # :free endpoints hit upstream congestion frequently — retry harder
+    # than the base class default before giving up on a bill.
+    max_retries: int = 6
+    retry_base_delay: float = 25.0
+
     def __init__(self):
         if not settings.openrouter_api_key:
             raise ValueError(

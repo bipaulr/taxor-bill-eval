@@ -16,7 +16,7 @@ from src.extractor import BaseExtractor, EXTRACTION_PROMPT, register_extractor
 
 
 @register_extractor("gemini-3.1-flash-lite")
-class GeminiExtractor(BaseExtractor):
+class Gemini31FlashLiteExtractor(BaseExtractor):
     """Extract bill data using Gemini 3.1 Flash Lite (vision-capable)."""
 
     model_name = "gemini-3.1-flash-lite"
@@ -85,4 +85,11 @@ class GeminiExtractor(BaseExtractor):
         input_cost = (self._last_input_tokens / 1_000_000) * self.input_price_per_1m
         output_cost = (self._last_output_tokens / 1_000_000) * self.output_price_per_1m
         return round(input_cost + output_cost, 8)
+
+
+@register_extractor("gemini-3-flash-preview")
+class Gemini3FlashPreviewExtractor(Gemini31FlashLiteExtractor):
+    """Gemini 3 Flash (preview) — same API, separate free-tier daily quota."""
+
+    model_name = "gemini-3-flash-preview"
 

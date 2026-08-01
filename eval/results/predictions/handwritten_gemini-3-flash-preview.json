@@ -1,0 +1,247 @@
+[
+  {
+    "vendor_name": null,
+    "invoice_number": null,
+    "date": "2024-07-07",
+    "amount": 500.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [
+      "vendor_name"
+    ],
+    "raw_text": "Handwritten estimate slip listing various food powders: Ragi powder (1kg, 110), Ragi puttupodi (1kg, 120), Wheat powder (1kg, 70), Puttupodi (1kg, 80), chamba puttupodi (500g, 60), and Cholam puttupodi (500g, 60). The total amount is 500.00. The date is written as 7/7/2024.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 248
+  },
+  {
+    "vendor_name": "C STORE ക്ലീനിംഗ് ഉൽപ്പന്നങ്ങളുടെ കട",
+    "invoice_number": "08",
+    "date": "2026-07-20",
+    "amount": 400.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill is from C STORE located at XXI/1453F, O K Road, Chalakudy, Thrissur - 680 307. It lists two items: Soap powder (5kg) for 220 and Bleaching powder (3 units at 60 each) for 180, totaling 400. The date appears to be 20/7/26.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 228
+  },
+  {
+    "vendor_name": "STAR TIMES",
+    "invoice_number": "10",
+    "date": "2024-07-14",
+    "amount": 250.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill is an estimate for a watch battery replacement. The shop is located on Main Road, Chalakudy - 680 307. There is a note in Malayalam at the bottom: \"NB: വാച്ചുകളുടെ ലെതർ സ്ട്രാപ്പ്, ഗ്ലാസ്സ് തുടങ്ങിയവയ്ക്ക് ഗ്യാരണ്ടി ഉണ്ടായിരിക്കുന്നതല്ല.\" (NB: No guarantee for leather straps, glass, etc. of watches.)",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1521,
+    "_output_tokens": 215
+  },
+  {
+    "vendor_name": null,
+    "invoice_number": null,
+    "date": "2026-07-21",
+    "amount": 180.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "This is an estimate bill for 3 units of Bleaching Powder at a total cost of 180. The vendor name and invoice number fields are left blank.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 157
+  },
+  {
+    "vendor_name": "Bravia Fried.",
+    "invoice_number": null,
+    "date": null,
+    "amount": 500.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [
+      "invoice_number",
+      "date"
+    ],
+    "raw_text": "Handwritten bill on the back of a printed receipt. Items listed: 6 Pice (440.00), Garlic (12.00), Colaslow (50). The handwritten total is 500.00, although the sum of the items is 502.00.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 200
+  },
+  {
+    "vendor_name": "LOURD FLOWERS",
+    "invoice_number": "75878",
+    "date": "2026-08-15",
+    "amount": 350.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [
+      "gst_number"
+    ],
+    "raw_text": "The bill is from a wholesale flower dealer. A handwritten entry for 'Boque' (Bouquet) is listed with a quantity of 1 and a total amount of 350. The top section containing contact details or registration numbers is blurred.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 195
+  },
+  {
+    "vendor_name": "BEST ELECTRICALS & SANITARIES",
+    "invoice_number": null,
+    "date": "2026-02-06",
+    "amount": 50.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "QUOTATION from BEST ELECTRICALS & SANITARIES, Main Road, CHALAKUDY. Date: 6/2/26. Item: Silicon Tube, Rate: 50, Qty: 1, Amount: 50. Total amount: 50.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1521,
+    "_output_tokens": 190
+  },
+  {
+    "vendor_name": "Animalia Veterinary Clinic",
+    "invoice_number": null,
+    "date": "2024-07-17",
+    "amount": 830.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Animalia Veterinary Clinic, Padakulam Signal Junction, Near Bypass, Kodungallur. Email: animaliapethospital@gmail.com. Bill for pet named 'Coco'. Consultation Fee: 300, Medicines (Terbinafine): 530. Total: 830.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 191
+  },
+  {
+    "vendor_name": "M.S Fruits & Vegetables വെട്ടുകടവ് റോഡ്, ചാലക്കുടി",
+    "invoice_number": null,
+    "date": "2024-07-27",
+    "amount": 134.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "The bill contains one handwritten item: മാങ്ങ (Mango) at a rate of 65 for a quantity of 2.070, totaling 134. The date appears to be 27/7/24.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 191
+  },
+  {
+    "vendor_name": "MM CHICKEN",
+    "invoice_number": "97",
+    "date": "2024-07-22",
+    "amount": 364.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Address: MARKET, CHALAKUDY, Mandikkunnu - Muringoor, Nr. CCMK Hospital, Chalakudy. Wholesale & Retail. Halal logo present. Item: Rate 280, Particulars 1-300, Amount 364. Phone number is blurred.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 196
+  },
+  {
+    "vendor_name": "The Queens Patisserie",
+    "invoice_number": "70",
+    "date": null,
+    "amount": 250.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [
+      "date year"
+    ],
+    "raw_text": "The Queens Patisserie, Tramway lane, Chalakudy, Kerala. FSSAI No.: 21320204000839. Instagram: @thequeenspatisserie_. Invoice No: 70. Date: 22/7. Items: 1. Classic (Qty 1, Rate 200, Amount 200), 2. container (Qty 1, Rate 50, Amount 50). Total: 250. Payment mode: Cash/UPI. Handwritten name: Dinaa.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 249
+  },
+  {
+    "vendor_name": "RAGAM BEAUTY CENTRE",
+    "invoice_number": "309",
+    "date": "2024-02-01",
+    "amount": 75.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "32AAAPX2607E1Z4",
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [
+      "handwritten product names"
+    ],
+    "raw_text": "The invoice is from Ragam Beauty Centre located in Chalakudy, Kerala. It includes bank details for HDFC Bank. The total amount is 75.00, consisting of two handwritten items priced at 55 and 20. The date of issue is 1/2/2024.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 221
+  },
+  {
+    "vendor_name": null,
+    "invoice_number": null,
+    "date": null,
+    "amount": 658.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "ml",
+    "illegible_fields": [],
+    "raw_text": "Handwritten grocery bill in Malayalam. Items listed with prices: Malli (78), Mulaku (120), Parippu (140), Pancha (80), Uzhunnu (160), Kadala (80). The total sum is 658.",
+    "_model": "gemini-3-flash-preview",
+    "_input_tokens": 1557,
+    "_output_tokens": 175
+  }
+]

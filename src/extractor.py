@@ -215,6 +215,7 @@ def register_extractor(name: str):
 # Model name to module path mapping (for lazy loading)
 _MODEL_MODULES = {
     "gemini-3.1-flash-lite": "src.models.gemini_client",
+    "gemini-3-flash-preview": "src.models.gemini_client",
     "gpt-4o": "src.models.openai_client",
     "claude-sonnet-4-6": "src.models.anthropic_client",
     "llama-4-scout": "src.models.groq_client",
