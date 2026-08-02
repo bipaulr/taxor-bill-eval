@@ -115,7 +115,7 @@ model updates only its rows.
 
 ```bash
 # after Zoho OAuth setup (docs/zoho_setup.md) and running with --save-predictions
-py run.py zoho-push eval/results/predictions/handwritten_gemini-3.1-flash-lite.json --max 5
+py run.py zoho-push eval/results/predictions/handwritten_gemini-3-flash-preview.json --max 5
 ```
 
 Verified live during this project: **13 real handwritten bills pushed as expenses
