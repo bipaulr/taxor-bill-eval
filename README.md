@@ -21,10 +21,7 @@ Built for the Taxor Software Engineering Internship screening task.
 | Gemini 3.1 Flash Lite | 100.0 | 53.8 | 38.5 | 92.3 | 100.0 | 92.3 | 13 |
 | Gemini 3 Flash Preview | 92.3 | 53.8 | 30.8 | 100.0 | 100.0 | 92.3 | 13 |
 | Nemotron Nano 12B VL | 92.3 | 46.2 | 38.5 | 84.6 | 100.0 | 92.3 | 13 |
-| Gemma 4 31B | 91.7 | 58.3 | 33.3 | 100.0 | 100.0 | 91.7 | 12* |
-
-\* bill 13 + all 3 digital bills blocked by Google AI Studio upstream congestion
-  on the run day (transient `429 upstream_provider_shared_pool`).
+| Gemma 4 31B | 92.3 | 61.5 | 38.5 | 100.0 | 100.0 | 92.3 | 13 |
 
 ### Digital (3 synthetic typed invoices) — accuracy % per field
 
@@ -33,7 +30,7 @@ Built for the Taxor Software Engineering Internship screening task.
 | Gemini 3.1 Flash Lite | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | Gemini 3 Flash Preview | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | Nemotron Nano 12B VL | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
-| Gemma 4 31B | — | — | — | — | — | — (congestion) |
+| Gemma 4 31B | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 
 ### Cost per bill (paid-tier list price; actual spend was ~$0.022 total on free tiers)
 

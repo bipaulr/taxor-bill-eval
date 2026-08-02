@@ -1,1 +1,56 @@
-[]
+[
+  {
+    "vendor_name": "BALAJI  SUPER  MART",
+    "invoice_number": "INV-2026-0147",
+    "date": "2026-07-18",
+    "amount": 987.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCT4781F1Z8",
+      "gst_amount": 47.0,
+      "taxable_value": 940.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Tax breakdown consists of CGST 2.5% (23.50) and SGST 2.5% (23.50).",
+    "_model": "google/gemma-4-31b-it:free",
+    "_input_tokens": 715,
+    "_output_tokens": 198
+  },
+  {
+    "vendor_name": "AMRITA MEDICAL STORE",
+    "invoice_number": "PH/0761",
+    "date": "2026-07-21",
+    "amount": 325.0,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": null,
+      "gst_amount": null,
+      "taxable_value": null
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Medical bill from Kochi with 4 items including Paracetamol, Azithromycin, Ambroxol, and ORS Sachet.",
+    "_model": "google/gemma-4-31b-it:free",
+    "_input_tokens": 715,
+    "_output_tokens": 160
+  },
+  {
+    "vendor_name": "ANNAPOORNA FAMILY RESTAURANT",
+    "invoice_number": "0842",
+    "date": "2026-07-25",
+    "amount": 404.26,
+    "currency": "INR",
+    "tax_gst": {
+      "gst_number": "29AABCP3456F1Z2",
+      "gst_amount": 19.26,
+      "taxable_value": 385.0
+    },
+    "language": "en",
+    "illegible_fields": [],
+    "raw_text": "Bill includes CGST 2.5% (9.63) and SGST 2.5% (9.63). FSSAI number 11521998000987 is also present.",
+    "_model": "google/gemma-4-31b-it:free",
+    "_input_tokens": 715,
+    "_output_tokens": 212
+  }
+]
