@@ -35,7 +35,7 @@ Built for the Taxor Software Engineering Internship screening task.
 | Nemotron Nano 12B VL | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | Gemma 4 31B | — | — | — | — | — | — (congestion) |
 
-### Cost per bill (paid-tier list price; actual spend was ~$0.017 total on free tiers)
+### Cost per bill (paid-tier list price; actual spend was ~$0.022 total on free tiers)
 
 | Model | cost/bill | cost/100 bills |
 |-------|-----------|----------------|
@@ -117,6 +117,11 @@ model updates only its rows.
 # after Zoho OAuth setup (docs/zoho_setup.md) and running with --save-predictions
 py run.py zoho-push eval/results/predictions/handwritten_gemini-3.1-flash-lite.json --max 5
 ```
+
+Verified live during this project: **13 real handwritten bills pushed as expenses
+to a Zoho Books test org** (INR, correct amounts, Malayalam vendor names intact).
+Data-center-aware auth + expense-account and currency-ID resolution are handled
+automatically — see [docs/zoho_setup.md](docs/zoho_setup.md) for the gotchas we hit.
 
 ### 3. Bonus UI — compare models on your own bill
 
