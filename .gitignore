@@ -26,10 +26,6 @@ Thumbs.db
 # Data - keep sample bill images out of repo by default
 # UNREDACTED originals - NEVER commit these
 raw_photos/
-data/samples/*.jpg
-data/samples/*.jpeg
-data/samples/*.png
-data/samples/*.heic
 # But keep a placeholder or allowlist if desired
 !data/samples/.gitkeep
 
