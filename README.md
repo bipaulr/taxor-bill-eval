@@ -71,7 +71,6 @@ Then fill in the keys you have:
 |-----|-----------------|-----------|
 | `GEMINI_API_KEY` | https://aistudio.google.com/app/apikey | ~20 req/day |
 | `OPENROUTER_API_KEY` | https://openrouter.ai/settings/keys | 50 req/day (all free models, shared) |
-| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | provider consoles | trial credits |
 | `ZOHO_*` | see [docs/zoho_setup.md](docs/zoho_setup.md) | free plan |
 
 Never commit your `.env` — it is git-ignored.
@@ -144,11 +143,8 @@ taxor/
 │   ├── config.py                # .env loading
 │   ├── zoho_integration.py      # Zoho Books client
 │   └── models/                  # one module per provider
-│       ├── gemini_client.py     # Gemini 3.1 Flash Lite
-│       ├── openrouter_client.py # Gemma 4 31B + Nemotron Nano 12B VL (:free)
-│       ├── groq_client.py       # Llama 4 Scout (no vision on free tier — kept for reference)
-│       ├── openai_client.py     # GPT-4o (trial credits exhausted)
-│       └── anthropic_client.py  # Claude (trial credits exhausted)
+│       ├── gemini_client.py     # Gemini 3.1 Flash Lite + 3 Flash Preview
+│       └── openrouter_client.py # Gemma 4 31B + Nemotron Nano 12B VL (:free)
 ├── data/
 │   ├── samples/                 # redacted handwritten bills
 │   ├── samples_digital/         # synthetic typed invoices

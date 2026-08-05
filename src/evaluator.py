@@ -239,7 +239,7 @@ def run_evaluation(
     merged CSVs.
     """
     if model_names is None:
-        model_names = ["gemini-3.1-flash-lite", "gpt-4o", "claude-sonnet-4-6"]
+        model_names = ["gemini-3.1-flash-lite", "gemma-4-31b", "nemotron-nano-12b-vl"]
 
     with open(ground_truth_path) as f:
         gt_data = json.load(f)

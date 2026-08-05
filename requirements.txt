@@ -8,8 +8,8 @@ python-multipart>=0.0.9
 
 # LLM SDKs
 google-genai>=1.0.0
+# Used for OpenRouter's OpenAI-compatible API, not OpenAI directly
 openai>=1.40.0
-anthropic>=0.40.0
 
 # Image processing (for redaction in step 2)
 Pillow>=10.0.0

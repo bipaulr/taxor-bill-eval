@@ -5,7 +5,7 @@ Usage:
     py eval\run_evaluation.py
 
 Optional:
-    py eval\run_evaluation.py --models gemini-2.5-flash,gpt-4o
+    py eval\run_evaluation.py --models gemini-3.1-flash-lite,nemotron-nano-12b-vl
     py eval\run_evaluation.py --gt data/ground_truth/ground_truth.json --samples data/samples/
 """
 
@@ -25,7 +25,7 @@ def main():
     )
     parser.add_argument(
         "--models",
-        default="gemini-3.1-flash-lite,gpt-4o,claude-sonnet-4-6",
+        default="gemini-3.1-flash-lite,gemma-4-31b,nemotron-nano-12b-vl",
         help="Comma-separated list of model names to evaluate",
     )
     parser.add_argument(
